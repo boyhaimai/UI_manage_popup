@@ -358,7 +358,7 @@ function DetailConversation({ idConfig, domain }) {
                     <TableCell sx={{ fontWeight: "bold", fontSize: 14 }}>Thời gian</TableCell>
                     <TableCell sx={{ fontWeight: "bold", fontSize: 14 }}>Tin nhắn</TableCell>
                     <TableCell sx={{ fontWeight: "bold", fontSize: 14 }}>
-                      Đây là tin bot hay user
+                      Người gửi
                     </TableCell>
                     <TableCell sx={{ fontWeight: "bold", fontSize: 14 }}>Website</TableCell>
                   </TableRow>
