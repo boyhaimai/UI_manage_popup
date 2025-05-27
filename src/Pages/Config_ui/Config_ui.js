@@ -143,7 +143,7 @@ function PageConfig() {
 
   useEffect(() => {
     fetchConfigAndStats();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   const handleWebsiteChange = (event) => {
@@ -168,7 +168,9 @@ function PageConfig() {
           }
         })
         .catch((err) => {
-          setError(err.response?.data?.message || "Không thể kết nối đến server.");
+          setError(
+            err.response?.data?.message || "Không thể kết nối đến server."
+          );
         });
     }
   };
@@ -216,9 +218,7 @@ function PageConfig() {
   };
 
   const handleCopyCode = () => {
-    const code = `<script src="./testLib.js" data-server-url="${
-      form.serverUrl
-    }" data-id-config="${id_config}" defer></script>`;
+    const code = `<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v1@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`;
     navigator.clipboard
       .writeText(code)
       .then(() => {
@@ -436,7 +436,7 @@ function PageConfig() {
                       sm={4}
                       md={4}
                       key={idx}
-                      sx={{ mb: { xs: 2, sm: 0 },width: "30%" }}
+                      sx={{ mb: { xs: 2, sm: 0 }, width: "30%" }}
                     >
                       <Paper
                         elevation={3}
@@ -978,9 +978,7 @@ function PageConfig() {
                       "&:hover": { backgroundColor: "#e5e7eb" },
                     }}
                   >
-                    {`<script src="./testLib.js" data-server-url="${
-                      form.serverUrl
-                    }" data-id-config="${id_config}" defer></script>`}
+                    {`<script src="./testLib.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`}
                   </Box>
                   <Button
                     startIcon={
