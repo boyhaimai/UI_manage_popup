@@ -218,7 +218,7 @@ function PageConfig() {
   };
 
   const handleCopyCode = () => {
-    const code = `<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v1@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`;
+    const code = `<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v3@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`;
     navigator.clipboard
       .writeText(code)
       .then(() => {
@@ -978,7 +978,7 @@ function PageConfig() {
                       "&:hover": { backgroundColor: "#e5e7eb" },
                     }}
                   >
-                    {`<script src="./testLib.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`}
+                    {`<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v3@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`}
                   </Box>
                   <Button
                     startIcon={
