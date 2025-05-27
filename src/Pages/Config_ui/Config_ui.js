@@ -75,7 +75,7 @@ function PageConfig() {
         setWebsites(websiteResponse.data.websites);
       } else {
         setError("Không tìm thấy danh sách website.");
-        navigate("/login_admin");
+        navigate("/");
         return;
       }
 
@@ -134,7 +134,7 @@ function PageConfig() {
       } else {
         setError("Không thể kết nối tới server.");
       }
-      navigate("/login_admin");
+      navigate("/");
     } finally {
       setFetchLoading(false);
       setLoadingWebsite(false);
@@ -282,11 +282,11 @@ function PageConfig() {
     axios
       .post(`${API_BASE_URL}/logout`, {}, { withCredentials: true })
       .then(() => {
-        navigate("/login_admin");
+        navigate("/");
       })
       .catch((err) => {
         console.error("Lỗi khi đăng xuất:", err);
-        navigate("/login_admin");
+        navigate("/");
       });
   };
 

@@ -32,11 +32,11 @@ function SelectWebsite() {
           setWebsites(response.data.websites);
         } else {
           setError("Không tìm thấy danh sách website.");
-          navigate("/login_admin");
+          navigate("/");
         }
       } catch (err) {
         setError(err.response?.data?.message || "Không thể kết nối đến server.");
-        navigate("/login_admin");
+        navigate("/");
       } finally {
         setLoading(false);
       }

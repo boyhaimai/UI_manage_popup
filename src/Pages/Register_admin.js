@@ -188,7 +188,7 @@ function Register() {
           <Button
             variant="outlined"
             fullWidth
-            onClick={() => navigate("/login_admin")}
+            onClick={() => navigate("/")}
             sx={{
               fontSize: "14px",
               color: "#0F172A",
