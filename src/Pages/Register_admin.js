@@ -18,7 +18,7 @@ function Register() {
     phone: "",
     password: "",
     confirmPassword: "",
-    websiteUrl: "",
+    websiteUrl: "https://",
   });
 
   const [error, setError] = useState("");
@@ -29,6 +29,7 @@ function Register() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     if (name === "phone") {
       if (/^\d*$/.test(value)) {
         setForm({ ...form, [name]: value });
@@ -44,16 +45,32 @@ function Register() {
     setSuccess("");
     setScriptCode("");
     setCopySuccess(false);
-    if (!/^\d{10,15}$/.test(form.phone)) {
+
+    // Clone form để xử lý trước khi gửi
+    const updatedForm = { ...form };
+
+    // Kiểm tra websiteUrl nếu không bắt đầu bằng http:// hoặc https:// thì thêm https://
+    if (!/^https?:\/\//i.test(updatedForm.websiteUrl)) {
+      updatedForm.websiteUrl = `https://${updatedForm.websiteUrl}`;
+    }
+
+    // Kiểm tra số điện thoại
+    if (!/^\d{10,15}$/.test(updatedForm.phone)) {
       setError("Số điện thoại phải có 10-15 chữ số.");
       return;
     }
-    if (form.password !== form.confirmPassword) {
+
+    // Kiểm tra mật khẩu
+    if (updatedForm.password !== updatedForm.confirmPassword) {
       setError("Mật khẩu và xác nhận mật khẩu không khớp.");
       return;
     }
+
     try {
-      const response = await axios.post(`${API_BASE_URL}/register-admin`, form);
+      const response = await axios.post(
+        `${API_BASE_URL}/register-admin`,
+        updatedForm
+      );
       if (response.data.success) {
         setSuccess("Đăng ký thành công!");
         setScriptCode(response.data.scriptCode);
@@ -124,42 +141,47 @@ function Register() {
         )}
 
         <form onSubmit={handleSubmit}>
+          <Typography sx={{ fontSize: "14px", mb: 0.5, color: "#0F172A" }}>
+            Số điện thoại (10 chữ số):
+          </Typography>
           <TextField
-            label="Số điện thoại"
             name="phone"
             value={form.phone}
             onChange={handleChange}
             fullWidth
             required
             inputProps={{ inputMode: "numeric", pattern: "\\d*" }}
-            InputLabelProps={{ style: { fontSize: "14px" } }}
             InputProps={{ style: { fontSize: "14px" } }}
             sx={{ mb: 2 }}
           />
+          <Typography sx={{ fontSize: "14px", mb: 0.5, color: "#0F172A" }}>
+            Mật khẩu (tối thiểu 6 ký tự):
+          </Typography>
           <TextField
-            label="Mật khẩu"
             name="password"
             type="password"
             value={form.password}
             onChange={handleChange}
             fullWidth
             required
-            InputLabelProps={{ style: { fontSize: "14px" } }}
             InputProps={{ style: { fontSize: "14px" } }}
             sx={{ mb: 2 }}
           />
+
+          <Typography sx={{ fontSize: "14px", mb: 0.5, color: "#0F172A" }}>
+            Nhập lại mật khẩu:
+          </Typography>
           <TextField
-            label="Nhập lại mật khẩu"
             name="confirmPassword"
             type="password"
             value={form.confirmPassword}
             onChange={handleChange}
             fullWidth
             required
-            InputLabelProps={{ style: { fontSize: "14px" } }}
             InputProps={{ style: { fontSize: "14px" } }}
             sx={{ mb: 2 }}
           />
+
           <TextField
             label="URL Website (e.g., http://example.com)"
             name="websiteUrl"
@@ -225,7 +247,9 @@ function Register() {
                 {scriptCode}
               </Box>
               <Button
-                startIcon={<ContentCopyIcon sx={{ fontSize: "12px !important" }} />}
+                startIcon={
+                  <ContentCopyIcon sx={{ fontSize: "12px !important" }} />
+                }
                 onClick={handleCopyCode}
                 sx={{
                   fontSize: "14px",
