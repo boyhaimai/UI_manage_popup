@@ -13,15 +13,40 @@ import {
   InputLabel,
   Box,
 } from "@mui/material";
+import { Add } from "@mui/icons-material";
 
 const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
 
+const inputStyle = {
+  "& .MuiInputBase-root": {
+    backgroundColor: "#f7f8fa",
+    fontSize: 13,
+  },
+  "& .MuiInputBase-input": {
+    fontSize: 13,
+    color: "#1e1e1e",
+  },
+  "& .MuiInputLabel-root": {
+    fontSize: 13,
+  },
+  "& .MuiOutlinedInput-root": {
+    "& fieldset": { borderColor: "#e0e0e0" },
+    "&:hover fieldset": { borderColor: "#0F172A" },
+    "&.Mui-focused fieldset": { borderColor: "#0F172A" },
+  },
+  "& .MuiFormHelperText-root": {
+    fontSize: 12,
+    marginTop: "4px",
+    backgroundColor: "transparent",
+  },
+};
+
 function Login() {
   const [form, setForm] = useState({
-    phone: "",
+    phoneNumber: "",
     password: "",
   });
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [websites, setWebsites] = useState([]);
   const [selectedWebsite, setSelectedWebsite] = useState("");
@@ -29,48 +54,60 @@ function Login() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === "phone") {
-      if (/^\d*$/.test(value)) {
-        setForm({ ...form, [name]: value });
-      }
-    } else {
-      setForm({ ...form, [name]: value });
+    setForm({ ...form, [name]: value });
+    setErrors({ ...errors, [name]: "" });
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    const phoneRegex = /^\+?\d{10,15}$/;
+    if (!form.phoneNumber || !phoneRegex.test(form.phoneNumber)) {
+      newErrors.phoneNumber = "Số điện thoại không hợp lệ.";
     }
+    if (!form.password) {
+      newErrors.password = "Vui lòng nhập mật khẩu.";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
-    if (!/^\d{10,15}$/.test(form.phone)) {
-      setError("Số điện thoại phải có 10-15 chữ số.");
+    setErrors({});
+
+    if (!validateForm()) {
       setLoading(false);
       return;
     }
+
+    setLoading(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/login-admin`, form, {
-        withCredentials: true,
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/login-admin`,
+        { phoneNumber: form.phoneNumber, password: form.password },
+        { withCredentials: true }
+      );
 
       if (response.data.success) {
         setWebsites(response.data.websites);
+        if (response.data.websites.length === 0) {
+          navigate("/add-web");
+        }
       } else {
-        setError(response.data.message);
+        setErrors({ server: response.data.message });
         setLoading(false);
       }
     } catch (err) {
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Không thể kết nối đến server.");
-      }
+      setErrors({
+        server: err.response?.data?.message || "Không thể kết nối đến server.",
+      });
       setLoading(false);
     }
   };
 
   const handleWebsiteSelect = () => {
     if (!selectedWebsite) {
-      setError("Vui lòng chọn một website.");
+      setErrors({ server: "Vui lòng chọn một website." });
       return;
     }
     const selected = websites.find((site) => site.domain === selectedWebsite);
@@ -82,16 +119,21 @@ function Login() {
       )
       .then((response) => {
         if (response.data.success) {
-          navigate("/config_ui");
+          navigate("/manage_page");
         } else {
-          setError(response.data.message);
+          setErrors({ server: response.data.message });
         }
       })
       .catch((err) => {
-        setError(
-          err.response?.data?.message || "Không thể kết nối đến server."
-        );
+        console.error("Select website error:", err);
+        setErrors({
+          server: err.response?.data?.message || "Không thể kết nối đến server.",
+        });
       });
+  };
+
+  const handleAddNewWebsite = () => {
+    navigate("/add_website");
   };
 
   return (
@@ -118,44 +160,47 @@ function Login() {
         }}
       >
         <Typography
-          variant="h4"
-          align="center"
-          sx={{ fontSize: "14px", fontWeight: "bold", mb: 3, color: "#0F172A" }}
+          sx={{ fontSize: 16, fontWeight: "bold", mb: 3, color: "#0F172A", textAlign: "center" }}
         >
           Đăng nhập Admin
         </Typography>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2, fontSize: "14px" }}>
-            {error}
+        {errors.server && (
+          <Alert severity="error" sx={{ mb: 2, fontSize: 13 }}>
+            {errors.server}
           </Alert>
         )}
 
         {!websites.length ? (
           <form onSubmit={handleSubmit}>
+            <Typography sx={{ fontSize: 13, mb: 0.5, color: "#0F172A" }}>
+              Số điện thoại
+            </Typography>
             <TextField
-              label="Số điện thoại"
-              name="phone"
-              value={form.phone}
+              name="phoneNumber"
+              value={form.phoneNumber}
               onChange={handleChange}
               fullWidth
               required
-              inputProps={{ inputMode: "numeric", pattern: "\\d*" }}
-              InputLabelProps={{ style: { fontSize: "14px" } }}
-              InputProps={{ style: { fontSize: "14px" } }}
-              sx={{ mb: 2 }}
+              placeholder="Nhập số điện thoại (VD: +84123456789)"
+              sx={{ ...inputStyle, mb: 2 }}
+              error={!!errors.phoneNumber}
+              helperText={errors.phoneNumber}
             />
+            <Typography sx={{ fontSize: 13, mb: 0.5, color: "#0F172A" }}>
+              Mật khẩu
+            </Typography>
             <TextField
-              label="Mật khẩu"
               name="password"
               type="password"
               value={form.password}
               onChange={handleChange}
               fullWidth
               required
-              InputLabelProps={{ style: { fontSize: "14px" } }}
-              InputProps={{ style: { fontSize: "14px" } }}
-              sx={{ mb: 3 }}
+              placeholder="Nhập mật khẩu"
+              sx={{ ...inputStyle, mb: 3 }}
+              error={!!errors.password}
+              helperText={errors.password}
             />
             <Button
               type="submit"
@@ -163,7 +208,7 @@ function Login() {
               fullWidth
               disabled={loading}
               sx={{
-                fontSize: "14px",
+                fontSize: 13,
                 bgcolor: "#0F172A",
                 "&:hover": { bgcolor: "#1e293b" },
                 py: 1.5,
@@ -177,7 +222,7 @@ function Login() {
               fullWidth
               onClick={() => navigate("/register_admin")}
               sx={{
-                fontSize: "14px",
+                fontSize: 13,
                 color: "#0F172A",
                 borderColor: "#0F172A",
                 "&:hover": { borderColor: "#1e293b", bgcolor: "#f8fafc" },
@@ -190,44 +235,64 @@ function Login() {
         ) : (
           <Box>
             <Typography
-              variant="h6"
-              align="center"
-              sx={{ fontSize: "14px", fontWeight: "bold", mb: 3 }}
+              sx={{ fontSize: 16, fontWeight: "bold", mb: 3, textAlign: "center" }}
             >
-              Chọn website để cấu hình
+              Chọn website để quản lý
             </Typography>
             <FormControl fullWidth sx={{ mb: 3 }}>
-              <InputLabel sx={{ fontSize: "14px" }}>Website</InputLabel>
+              <InputLabel sx={{ fontSize: 13 }}>Website</InputLabel>
               <Select
                 value={selectedWebsite}
                 onChange={(e) => setSelectedWebsite(e.target.value)}
                 label="Website"
-                sx={{ fontSize: "14px", "& .MuiSelect-select": { py: 1.5 } }}
+                sx={{
+                  ...inputStyle,
+                  "& .MuiSelect-select": { fontSize: 13, py: 1.5 },
+                }}
               >
                 {websites.map((site) => (
                   <MenuItem
                     key={site.domain}
                     value={site.domain}
-                    sx={{ fontSize: "14px" }}
+                    sx={{ fontSize: 13 }}
                   >
                     {site.domain}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={handleWebsiteSelect}
-              sx={{
-                fontSize: "14px",
-                bgcolor: "#0F172A",
-                "&:hover": { bgcolor: "#1e293b" },
-                py: 1.5,
-              }}
-            >
-              Tiếp tục
-            </Button>
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Button
+                variant="outlined"
+                onClick={handleAddNewWebsite}
+                sx={{
+                  fontSize: 13,
+                  color: "#0F172A",
+                  borderColor: "#0F172A",
+                  "&:hover": { bgcolor: "#1e293b", color: "#fff" },
+                  py: 1.5,
+                  width: "55%",
+                  textTransform: "none",
+                }}
+                startIcon={<Add />}
+              >
+                Thêm website mới
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleWebsiteSelect}
+                sx={{
+                  fontSize: 13,
+                  bgcolor: "#0F172A",
+                  "&:hover": { bgcolor: "#1e293b" },
+                  py: 1.5,
+                  width: "30%",
+                  textTransform: "none",
+                }}
+              >
+                Tiếp tục
+              </Button>
+            </Box>
           </Box>
         )}
       </Box>

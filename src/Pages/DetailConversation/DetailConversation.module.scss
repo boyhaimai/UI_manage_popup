@@ -1,0 +1,19 @@
+.wrapper {
+  margin: 15px 15px 15px 0;
+  box-sizing: border-box;
+  height: calc(100% - 30px);
+  width: calc(100% - 15px);
+  border-radius: 8px;
+  overflow: hidden;
+  overflow-y: auto;
+  position: relative;
+}
+.title_header {
+  border-bottom: 1px solid #d9dbe4 !important;
+  background-color: #0F172A !important;
+  width: 100%;
+  line-height: 25px;
+  z-index: 999;
+  position: absolute;
+  border-radius: 8px 8px 0 0
+}

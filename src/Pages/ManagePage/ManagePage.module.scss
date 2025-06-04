@@ -1,0 +1,38 @@
+.wrapper {
+  margin: 15px 15px 15px 0;
+  box-sizing: border-box;
+  height: calc(100% - 30px);
+  width: calc(100% - 15px);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: var(--c_white);
+  color: var(--c_letter);
+  overflow-y: auto;
+  position: relative;
+}
+.title_header {
+  padding: 16px;
+  border-bottom: 1px solid #d9dbe4 !important;
+  background-color: var(--c_white);
+  width: 100%;
+  line-height: 25px;
+  position: absolute;
+  top: 15px;
+  left: 0;
+  z-index: 999;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  border-radius: 8px 8px 0 0
+}
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--c_letter);
+  align-items: center;
+}
+.avatar_preview{
+  border-radius: 4px;
+  image-rendering: auto;
+}

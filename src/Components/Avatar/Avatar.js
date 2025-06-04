@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import noImage from "~/Components/assets/image/noImage.png";
 import classNames from "classnames/bind";
 import styles from "./Avatar.module.scss";
@@ -6,17 +6,20 @@ import styles from "./Avatar.module.scss";
 const cx = classNames.bind(styles);
 
 function Avatar({ src, alt, className, ...props }) {
-  const [fallback, setFalback] = useState("");
-  const handleError = () => {
-    setFalback(noImage);
-  };
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    // reset lỗi nếu src thay đổi (ví dụ: người dùng chọn ảnh mới)
+    setHasError(false);
+  }, [src]);
+
   return (
     <img
-      src={fallback || src}
+      src={hasError ? noImage : src}
       alt={alt}
       className={cx(styles.wrapper, className)}
+      onError={() => setHasError(true)}
       {...props}
-      onError={handleError}
     />
   );
 }

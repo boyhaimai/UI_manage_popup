@@ -1,0 +1,31 @@
+.menu_item {
+  display: flex;
+  padding: 8px 16px 8px 25px;
+  width: 100%;
+  line-height: 25px;
+  align-items: center;
+  border-radius: 15px;
+
+  &.active {
+    background-color: #171717;
+
+    .title {
+      color: var(--c_aqua) !important;
+    }
+    svg{
+      color: var(--c_aqua) !important;
+    }
+  }
+}
+.title {
+  font-size: 13px;
+  font-weight: 700;
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  color: var(--bg_write_chat);
+  margin-left: 15px;
+}
+.menu_item:hover {
+  background-color: #171717;
+}

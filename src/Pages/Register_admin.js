@@ -1,84 +1,104 @@
 import React, { useState } from "react";
 import {
-  Container,
   TextField,
   Button,
   Typography,
   Alert,
   Box,
+  Avatar,
 } from "@mui/material";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
 
+const inputStyle = {
+  "& .MuiInputBase-root": {
+    backgroundColor: "#f7f8fa",
+    fontSize: 13,
+  },
+  "& .MuiInputBase-input": {
+    fontSize: 13,
+    color: "#1e1e1e",
+  },
+  "& .MuiInputLabel-root": {
+    fontSize: 13,
+  },
+  "& .MuiOutlinedInput-root": {
+    "& fieldset": { borderColor: "#e0e0e0" },
+    "&:hover fieldset": { borderColor: "#0F172A" },
+    "&.Mui-focused fieldset": { borderColor: "#0F172A" },
+  },
+  "& .MuiFormHelperText-root": {
+    fontSize: 12,
+    marginTop: "4px",
+    backgroundColor: "transparent",
+  },
+};
+
 function Register() {
   const [form, setForm] = useState({
-    phone: "",
+    name: "",
+    phoneNumber: "",
     password: "",
     confirmPassword: "",
-    websiteUrl: "",
   });
-
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState("");
-  const [scriptCode, setScriptCode] = useState("");
-  const [copySuccess, setCopySuccess] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === "phone") {
-      if (/^\d*$/.test(value)) {
-        setForm({ ...form, [name]: value });
-      }
-    } else {
-      setForm({ ...form, [name]: value });
+    setForm({ ...form, [name]: value });
+    setErrors({ ...errors, [name]: "" });
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!form.name || form.name.trim().length < 2) {
+      newErrors.name = "Tên phải có ít nhất 2 ký tự.";
     }
+    const phoneRegex = /^\+?\d{10,15}$/;
+    if (!form.phoneNumber || !phoneRegex.test(form.phoneNumber)) {
+      newErrors.phoneNumber = "Số điện thoại không hợp lệ.";
+    }
+    if (!form.password || form.password.length < 8) {
+      newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự.";
+    }
+    if (form.password !== form.confirmPassword) {
+      newErrors.confirmPassword = "Mật khẩu không khớp.";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setSuccess("");
-    setScriptCode("");
-    setCopySuccess(false);
-    if (!/^\d{10,15}$/.test(form.phone)) {
-      setError("Số điện thoại phải có 10-15 chữ số.");
-      return;
-    }
-    if (form.password !== form.confirmPassword) {
-      setError("Mật khẩu và xác nhận mật khẩu không khớp.");
-      return;
-    }
+
+    if (!validateForm()) return;
+
     try {
-      const response = await axios.post(`${API_BASE_URL}/register-admin`, form);
+      const response = await axios.post(
+        `${API_BASE_URL}/register-admin`,
+        {
+          name: form.name,
+          phoneNumber: form.phoneNumber,
+          password: form.password,
+        },
+        { withCredentials: true }
+      );
       if (response.data.success) {
         setSuccess("Đăng ký thành công!");
-        setScriptCode(response.data.scriptCode);
+        setTimeout(() => navigate("/add_website"), 1000);
       } else {
-        setError(response.data.message);
+        setErrors({ server: response.data.message });
       }
     } catch (err) {
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Không thể kết nối đến server.");
-      }
-    }
-  };
-
-  const handleCopyCode = () => {
-    navigator.clipboard
-      .writeText(scriptCode)
-      .then(() => {
-        setCopySuccess(true);
-        setTimeout(() => setCopySuccess(false), 2000);
-      })
-      .catch(() => {
-        setError("Không thể sao chép mã. Vui lòng thử lại.");
+      setErrors({
+        server: err.response?.data?.message || "Không thể kết nối đến server.",
       });
+    }
   };
 
   return (
@@ -104,79 +124,101 @@ function Register() {
           overflowY: "auto",
         }}
       >
+        <Box sx={{ textAlign: "center", mb: 3 }}>
+          <Avatar
+            sx={{
+              width: 80,
+              height: 80,
+              mx: "auto",
+              bgcolor: "#808080",
+              fontSize: 40,
+            }}
+          >
+            {form.name?.charAt(0)?.toUpperCase() || "A"}
+          </Avatar>
+        </Box>
         <Typography
-          variant="h4"
-          align="center"
-          sx={{ fontSize: "14px", fontWeight: "bold", mb: 3, color: "#0F172A" }}
+          sx={{ fontSize: 16, fontWeight: "bold", mb: 3, color: "#0F172A", textAlign: "center" }}
         >
           Đăng ký Admin
         </Typography>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2, fontSize: "14px" }}>
-            {error}
+        {errors.server && (
+          <Alert severity="error" sx={{ mb: 2, fontSize: 13 }}>
+            {errors.server}
           </Alert>
         )}
         {success && (
-          <Alert severity="success" sx={{ mb: 2, fontSize: "14px" }}>
+          <Alert severity="success" sx={{ mb: 2, fontSize: 13 }}>
             {success}
           </Alert>
         )}
 
         <form onSubmit={handleSubmit}>
+          <Typography sx={{ fontSize: 13, mb: 0.5, color: "#0F172A" }}>
+            Tên
+          </Typography>
           <TextField
-            label="Số điện thoại"
-            name="phone"
-            value={form.phone}
+            name="name"
+            value={form.name}
             onChange={handleChange}
             fullWidth
             required
-            inputProps={{ inputMode: "numeric", pattern: "\\d*" }}
-            InputLabelProps={{ style: { fontSize: "14px" } }}
-            InputProps={{ style: { fontSize: "14px" } }}
-            sx={{ mb: 2 }}
+            placeholder="Nhập tên"
+            sx={{ ...inputStyle, mb: 2 }}
+            error={!!errors.name}
+            helperText={errors.name}
           />
+          <Typography sx={{ fontSize: 13, mb: 0.5, color: "#0F172A" }}>
+            Số điện thoại
+          </Typography>
           <TextField
-            label="Mật khẩu"
+            name="phoneNumber"
+            value={form.phoneNumber}
+            onChange={handleChange}
+            fullWidth
+            required
+            placeholder="Nhập số điện thoại (VD: +84123456789)"
+            sx={{ ...inputStyle, mb: 2 }}
+            error={!!errors.phoneNumber}
+            helperText={errors.phoneNumber}
+          />
+          <Typography sx={{ fontSize: 13, mb: 0.5, color: "#0F172A" }}>
+            Mật khẩu
+          </Typography>
+          <TextField
             name="password"
             type="password"
             value={form.password}
             onChange={handleChange}
             fullWidth
             required
-            InputLabelProps={{ style: { fontSize: "14px" } }}
-            InputProps={{ style: { fontSize: "14px" } }}
-            sx={{ mb: 2 }}
+            placeholder="Nhập mật khẩu"
+            sx={{ ...inputStyle, mb: 2 }}
+            error={!!errors.password}
+            helperText={errors.password}
           />
+          <Typography sx={{ fontSize: 13, mb: 0.5, color: "#0F172A" }}>
+            Nhập lại mật khẩu
+          </Typography>
           <TextField
-            label="Nhập lại mật khẩu"
             name="confirmPassword"
             type="password"
             value={form.confirmPassword}
             onChange={handleChange}
             fullWidth
             required
-            InputLabelProps={{ style: { fontSize: "14px" } }}
-            InputProps={{ style: { fontSize: "14px" } }}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            label="URL Website (e.g., http://example.com)"
-            name="websiteUrl"
-            value={form.websiteUrl}
-            onChange={handleChange}
-            fullWidth
-            required
-            InputLabelProps={{ style: { fontSize: "14px" } }}
-            InputProps={{ style: { fontSize: "14px" } }}
-            sx={{ mb: 3 }}
+            placeholder="Nhập lại mật khẩu"
+            sx={{ ...inputStyle, mb: 2 }}
+            error={!!errors.confirmPassword}
+            helperText={errors.confirmPassword}
           />
           <Button
             type="submit"
             variant="contained"
             fullWidth
             sx={{
-              fontSize: "14px",
+              fontSize: 13,
               bgcolor: "#0F172A",
               "&:hover": { bgcolor: "#1e293b" },
               py: 1.5,
@@ -190,7 +232,7 @@ function Register() {
             fullWidth
             onClick={() => navigate("/")}
             sx={{
-              fontSize: "14px",
+              fontSize: 13,
               color: "#0F172A",
               borderColor: "#0F172A",
               "&:hover": { borderColor: "#1e293b", bgcolor: "#f8fafc" },
@@ -200,49 +242,6 @@ function Register() {
             Đã có tài khoản? Đăng nhập
           </Button>
         </form>
-
-        {scriptCode && (
-          <Box mt={3}>
-            <Typography
-              variant="h6"
-              sx={{ fontSize: "14px", fontWeight: "bold", mb: 1 }}
-            >
-              Mã nhúng:
-            </Typography>
-            <Box sx={{ position: "relative" }}>
-              <Box
-                component="pre"
-                sx={{
-                  fontSize: "14px",
-                  bgcolor: "#f5f5f5",
-                  p: 2,
-                  borderRadius: "8px",
-                  overflowX: "auto",
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-all",
-                }}
-              >
-                {scriptCode}
-              </Box>
-              <Button
-                startIcon={<ContentCopyIcon sx={{ fontSize: "12px !important" }} />}
-                onClick={handleCopyCode}
-                sx={{
-                  fontSize: "14px",
-                  position: "absolute",
-                  top: "8px",
-                  right: "8px",
-                  color: "#0F172A",
-                  bgcolor: "#e5e7eb",
-                  "&:hover": { bgcolor: "#d1d5db" },
-                  padding: "4px 8px",
-                }}
-              >
-                {copySuccess ? "Đã sao chép!" : "Sao chép"}
-              </Button>
-            </Box>
-          </Box>
-        )}
       </Box>
     </Box>
   );

@@ -14,7 +14,7 @@
   --height_write_message: 91.6px;
   --height_box_icon_chat: 40.8px;
   --height_input_chat: 54px;
-  --width_sibar: 344px;
+  --width_sibar: 210px; // width sidebar
   --width_box_chat: 738px; //pc
   --heigh_box_chat: 695.2px; // height pc defaul  
   --heigh_box_chat_mb:620px; // heightmobile defaul  
@@ -37,17 +37,22 @@
   --c_boder: rgba(0, 0, 0, 0.15);
   --c_icon: #5a6981; //text secondary
   --c_active: #37b361;
+  --c_active_hover: #37b361d1;
   --c_number: #44546f;
   --border: rgba(0, 0, 0, 0.1);
   --black: #000;
   --c_white: #fff;
   --c_red_light: rgb(254, 44, 85);
+  --c_aqua:#10e6d4;
+  --c_letter: #545454;
 
   //color mb
 
   --c_header_mb: linear-gradient(135deg, #1e90ff, #00bfff);
   --bg_box_message_mb: #e1e9f2;
   --bg_write_chat: #ffffff;
+  --bg_sidebar: #262626;
+  --bg_body: #f7f7f9;
   //shadow
   --shadow_overlay: 0px 0px 1px 0px rgba(21, 39, 71, 0.3),
     0px 8px 12px 0px rgba(21, 39, 71, 0.15);
@@ -71,6 +76,7 @@ html,
 body {
   overflow: hidden; /* Ẩn thanh cuộn mặc định */
   height: 100%; /* Đảm bảo body chiếm full màn hình */
+  background-color: var(--bg_body);
 }
 html {
   font-size: 62.5%;
@@ -135,125 +141,17 @@ a {
 ul {
   list-style: none;
 }
-.fa-Group_Create_24_Line::after {
-  content: "\eb38";
-}
-.fa-icon-outline-video::after {
-  content: "\ebe2";
-}
-.fa-outline-search::after {
-  content: "\ec97";
-}
-.fa-outline-right-bar::after {
-  content: "\ec95";
-}
-.fa-Group_Create_24_Line,
-.fa-icon-outline-video,
-.fa-outline-search,
-.fa-outline-right-bar {
-  font-size: 20px;
-}
-.fa-Sticker_24_Line:after {
-  content: "\ed57";
-}
-.fa-Photo_24_Line:after {
-  content: "\ecac";
-}
-.fa-Attach_24_Line:after {
-  content: "\ea20";
-}
-.fa-Namecard_24_Line:after {
-  content: "\ec5c";
-}
-.fa-Screenshot-Z_24_Line:after {
-  content: "\ecf6";
-}
-.fa-TextFormat_24_Line:after {
-  content: "\ed8c";
-}
-.fa-Quick-msg:after {
-  content: "\ecce";
-}
-.fa-More_24_Line:after {
-  content: "\ec52";
-}
-.fa-Emoji_24_Line:after {
-  content: "\eaed";
-}
-.fa-outline-tag:after {
-  content: "\ec9b";
-  margin-right: 15px;
-}
-.fa-Check_24_Line:after {
-  content: "\ea74";
-  font-size: 16px !important;
-}
-.fa-Duo_Check_24_Line:after {
-  content: "\eadb";
-}
-.fa-Sticker_24_Line:after,
-.fa-Photo_24_Line:after,
-.fa-Attach_24_Line:after,
-.fa-Namecard_24_Line:after,
-.fa-Screenshot-Z_24_Line:after,
-.fa-More_24_Line:after,
-.fa-TextFormat_24_Line:after,
-.fa-Quick-msg:after,
-.fa-Emoji_24_Line:after {
-  font-weight: normal !important;
-  font-size: 24.2px;
-  height: 25.6px;
-}
-i.fa.fa-Check_24_Line.bubble-message-status__icon {
-  width: 15px !important;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  margin-right: 4px;
-}
-.fa-Duo_Check_24_Line{
-  font-size: 16px !important;
-  height: 100% !important;
-  width: 16px !important;
-  margin-right: 4px;
-  display: flex;
-  justify-content: center;
+// css Scroll-bar
+html ::-webkit-scrollbar {
+    border-radius: 0px;
+    width: 8px;
 }
 
-i.fa {
-  font-family: var(--font-body);
-  width: 32px;
-  height: 32px;
-  align-items: center;
-  text-align: center;
-  font-weight: 500;
-}
-.hiden {
-  opacity: 0;
-}
-.white {
-  background-color: #fff !important;
-}
-.black {
-  background-color: #000 !important;
+html ::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(22, 24, 35, 0.06);
 }
 
-
-.container {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.form-field {
-  margin-bottom: 16px;
-}
-
-.script-code {
-  background: #f4f4f4;
-  padding: 16px;
-  border-radius: 4px;
-  white-space: pre-wrap;
-  word-break: break-all;
+html ::-webkit-scrollbar-track {
+    border-radius: 0px;
 }
