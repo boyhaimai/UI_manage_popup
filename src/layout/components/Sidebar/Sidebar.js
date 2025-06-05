@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import classNames from "classnames/bind";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -25,7 +25,6 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 import styles from "./Sidebar.module.scss";
 import Avatar from "~/Components/Avatar/Avatar";
-import { useEffect } from "react";
 
 const cx = classNames.bind(styles);
 const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
@@ -43,7 +42,7 @@ function Sidebar() {
 
   const handleClose = () => {
     setAnchorEl(null);
-    setError(""); // Xóa lỗi khi đóng menu
+    setError("");
   };
 
   const handleLogout = async () => {
@@ -54,10 +53,9 @@ function Sidebar() {
         { withCredentials: true }
       );
       if (response.data.success) {
-        // Xóa cookie authToken ở client (tùy chọn, vì server đã xóa)
         document.cookie =
           "authToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-        navigate(config.routes.login_admin); // Chuyển hướng về trang đăng nhập
+        navigate(config.routes.login_admin);
       } else {
         setError(response.data.message || "Đăng xuất thất bại.");
       }
@@ -65,7 +63,7 @@ function Sidebar() {
       console.error("Logout error:", err);
       setError(err.response?.data?.message || "Không thể kết nối đến server.");
     } finally {
-      handleClose(); // Đóng menu
+      handleClose();
     }
   };
 
@@ -142,19 +140,13 @@ function Sidebar() {
           backgroundColor: "#fff",
         }}
       >
-        <Box
-          sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}
-        >
-          {" "}
-          {/* Add minWidth: 0 here */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
           <Avatar
             src={adminInfo?.avatar || ""}
             alt={adminInfo?.name || ""}
             className={cx("avatar")}
           />
           <Box sx={{ minWidth: 0 }}>
-            {" "}
-            {/* Add minWidth: 0 here */}
             <Typography
               fontWeight={600}
               fontSize={14}
@@ -162,7 +154,7 @@ function Sidebar() {
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                maxWidth: "calc(150px - 10px)", // Điều chỉnh maxWidth cho tên nếu cần
+                maxWidth: "calc(150px - 10px)",
               }}
             >
               {adminInfo?.name || "Loading..."}
@@ -174,16 +166,14 @@ function Sidebar() {
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                maxWidth: "150px", // Đặt giới hạn chiều rộng cho email
+                maxWidth: "150px",
               }}
             >
-              {adminInfo?.email || ""}
+              {adminInfo?.phoneNumber || ""} {/* Sửa từ email thành phoneNumber */}
             </Typography>
           </Box>
         </Box>
         <IconButton onClick={handleClick} sx={{ flexShrink: 0 }}>
-          {" "}
-          {/* Add flexShrink: 0 here */}
           <MoreVertIcon sx={{ fontSize: 20 }} />
         </IconButton>
         <Menu
@@ -204,7 +194,7 @@ function Sidebar() {
                 fontSize: 14,
                 display: "flex",
                 alignItems: "center",
-                gap: 1,              
+                gap: 1,
                 transition: "all 0.2s ease",
               },
               "& .MuiMenuItem-root:hover": {
