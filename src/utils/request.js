@@ -1,7 +1,7 @@
 // requests.js
 import axios from "axios";
 
-const urlOriginal = `https://ai.bang.vawayai.com:5000`;
+const urlOriginal = `ai.bang.vawayai.com`;
 
 const request = axios.create({
   baseURL: urlOriginal,

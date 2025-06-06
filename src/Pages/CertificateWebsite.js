@@ -3,7 +3,7 @@ import { Box, Typography, Button, Grid, Alert, CircularProgress } from "@mui/mat
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
+const API_BASE_URL = "http://localhost:5000";
 
 export default function CertificateWebsite() {
   const [configId, setConfigId] = useState(null);
@@ -82,7 +82,7 @@ export default function CertificateWebsite() {
 
       // Tạo mã nhúng cần tìm
       const scriptPattern = new RegExp(
-        `<script\\s+src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v3@main/dist/model_admin_just_chat.js"\\s+data-server-url="https://https://ai.bang.vawayai.com:5000:5000"\\s+data-id-config="${configId}"\\s+defer></script>`
+        `<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v3@main/dist/model_admin_just_chat.js" data-server-url="https://ai.bang.vawayai.com:5000" data-id-config=${configId} defer></script>`
           .replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
       );
 
