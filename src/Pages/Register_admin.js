@@ -10,7 +10,7 @@ import {
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
+const API_BASE_URL = "http://localhost:5000";
 
 const inputStyle = {
   "& .MuiInputBase-root": {

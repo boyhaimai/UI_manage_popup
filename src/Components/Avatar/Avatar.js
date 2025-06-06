@@ -9,13 +9,16 @@ function Avatar({ src, alt, className, ...props }) {
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    // reset lỗi nếu src thay đổi (ví dụ: người dùng chọn ảnh mới)
+    // Reset lỗi nếu src thay đổi (ví dụ: người dùng chọn ảnh mới)
     setHasError(false);
   }, [src]);
 
+  // Nếu src là chuỗi rỗng hoặc không hợp lệ, sử dụng null hoặc noImage
+  const imageSrc = src && src !== "" ? (hasError ? noImage : src) : noImage;
+
   return (
     <img
-      src={hasError ? noImage : src}
+      src={imageSrc}
       alt={alt}
       className={cx(styles.wrapper, className)}
       onError={() => setHasError(true)}

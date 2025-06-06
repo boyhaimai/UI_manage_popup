@@ -12,6 +12,7 @@ import {
   Forum,
   HelpRounded,
   SettingsRounded,
+  Telegram,
 } from "@mui/icons-material";
 import {
   Box,
@@ -27,7 +28,7 @@ import styles from "./Sidebar.module.scss";
 import Avatar from "~/Components/Avatar/Avatar";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
+const API_BASE_URL = "http://localhost:5000";
 
 function Sidebar() {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -105,7 +106,12 @@ function Sidebar() {
           title="Quản lý trò chuyện"
           to={config.routes.DetailConversation}
           icon={<Forum className={cx("icon_menu")} />}
-        />
+        />       
+        {/* <MenuItemCustom
+          title="Tham gia trò chuyện"
+          to={config.routes.message}
+          icon={<Telegram className={cx("icon_menu")} />}
+        />        */}
         <Box className={cx("support")}>
           <MenuItemCustom
             title="Settings"
@@ -118,7 +124,7 @@ function Sidebar() {
             icon={<ErrorRounded className={cx("icon_menu")} />}
           />
           <MenuItemCustom
-            title="Feedback"
+            title="Support"
             to="/feedback"
             icon={<HelpRounded className={cx("icon_menu")} />}
           />

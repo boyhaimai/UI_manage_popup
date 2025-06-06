@@ -10,10 +10,6 @@ import {
   Typography,
   CircularProgress,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Pagination,
   Grid,
   Divider,
@@ -22,9 +18,14 @@ import {
   InputAdornment,
   AppBar,
   Toolbar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
@@ -33,7 +34,7 @@ import classNames from "classnames/bind";
 import styles from "./DetailConversation.module.scss";
 const cx = classNames.bind(styles);
 
-const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
+const API_BASE_URL = "http://localhost:5000";
 
 function DetailConversation() {
   const navigate = useNavigate();
@@ -48,35 +49,19 @@ function DetailConversation() {
   const [year, setYear] = useState("");
   const [month, setMonth] = useState("");
   const [day, setDay] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+  const [openFilterDialog, setOpenFilterDialog] = useState(false);
   const [loading, setLoading] = useState(true);
   const [fetching, setFetching] = useState(false);
   const [error, setError] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedSessionId, setSelectedSessionId] = useState("");
   const wrapperRef = useRef();
   const headerRef = useRef();
-
-  // Tạo danh sách năm, tháng, ngày
-  const currentDate = new Date();
-  const years = [
-    "",
-    ...Array.from({ length: 10 }, (_, i) => currentDate.getFullYear() - i),
-  ];
-  const getMaxDays = (y, m) => {
-    return new Date(
-      y || currentDate.getFullYear(),
-      m || currentDate.getMonth() + 1,
-      0
-    ).getDate();
-  };
-  const months = ["", ...Array.from({ length: 12 }, (_, i) => i + 1)];
-  const days =
-    year && month
-      ? Array.from({ length: getMaxDays(year, month) }, (_, i) => i + 1)
-      : [""];
 
   // Lấy idConfig và domain
   const fetchConfigAndDomain = async () => {
     try {
-      // Lấy idConfig từ /get-selected-config
       const configResponse = await axios.get(
         `${API_BASE_URL}/get-selected-config`,
         {
@@ -91,7 +76,6 @@ function DetailConversation() {
         return;
       }
 
-      // Lấy domain từ /get-websites
       const websiteResponse = await axios.get(`${API_BASE_URL}/get-websites`, {
         withCredentials: true,
       });
@@ -167,8 +151,10 @@ function DetailConversation() {
     } catch (err) {
       console.error("Lỗi khi lấy lịch sử:", err);
       setError(err.response?.data?.message || "Lỗi server.");
+      setMessagesBySession({}); // Đặt lại messagesBySession để hiển thị "Không có hội thoại"
+      setTotalConversations(0);
     } finally {
-      setFetching(false);
+      setFetching(false); // Luôn đặt fetching về false để mở khóa các nút
     }
   };
 
@@ -230,36 +216,56 @@ function DetailConversation() {
     }
   };
 
-  // Xử lý bộ lọc thời gian
-  const handleYearChange = (event) => {
-    const newYear = event.target.value;
-    setYear(newYear);
-    setMonth("");
-    setDay("");
-    setPage(1);
-    setFetching(true);
+  // Xử lý bộ lọc ngày
+  const handleOpenFilterDialog = () => {
+    setOpenFilterDialog(true);
   };
 
-  const handleMonthChange = (event) => {
-    const newMonth = event.target.value;
-    setMonth(newMonth);
-    setDay("");
-    setPage(1);
-    setFetching(true);
+  const handleCloseFilterDialog = () => {
+    setOpenFilterDialog(false);
   };
 
-  const handleDayChange = (event) => {
-    setDay(event.target.value);
+  const handleFilterDateChange = (event) => {
+    const date = event.target.value;
+    setFilterDate(date);
+    if (date) {
+      const [year, month, day] = date.split("-");
+      setYear(year);
+      setMonth(parseInt(month, 10));
+      setDay(parseInt(day, 10));
+    } else {
+      setYear("");
+      setMonth("");
+      setDay("");
+    }
+  };
+
+  const handleApplyFilter = () => {
     setPage(1);
     setFetching(true);
+    handleCloseFilterDialog();
   };
 
   const handleResetFilter = () => {
     setYear("");
     setMonth("");
     setDay("");
+    setFilterDate("");
     setPage(1);
+    setSearch("");
+    setSearchInput("");
     setFetching(true);
+  };
+
+  // Xử lý mở/đóng dialog lịch sử
+  const handleOpenDialog = (sessionId) => {
+    setSelectedSessionId(sessionId);
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedSessionId("");
   };
 
   if (loading) {
@@ -283,18 +289,14 @@ function DetailConversation() {
   return (
     <div className={cx("wrapper")} ref={wrapperRef}>
       {/* Header */}
-      <AppBar
-        position="static"       
-        className={cx("title_header")}
-        ref={headerRef}
-      >
+      <AppBar position="static" className={cx("title_header")} ref={headerRef}>
         <Toolbar>
           <IconButton
             edge="start"
             color="inherit"
             onClick={() => navigate("/manage_page")}
           >
-            <ArrowBackIcon />
+            <ArrowBackIcon sx={{ fontSize: 26 }} />
           </IconButton>
           <Typography
             variant="h6"
@@ -340,174 +342,178 @@ function DetailConversation() {
             <Button
               variant="contained"
               onClick={handleSearch}
-              sx={{ fontSize: 14, height: "100%", padding: "6px 16px" }}
-              disabled={fetching}
+              sx={{
+                fontSize: 14,
+                height: "100%",
+                padding: "6px 16px",
+                bgcolor: "#0F172A",
+                "&:hover": { bgcolor: "#1e293b" },
+              }}
+              disabled={fetching || !searchInput.trim()} // 👈 thêm điều kiện này
             >
               Tìm kiếm
             </Button>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <Paper
-              elevation={1}
+            <Button
+              variant="outlined"
+              onClick={handleOpenFilterDialog}
+              startIcon={<FilterAltIcon />}
               sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                p: 1,
-                borderRadius: "8px",
-                backgroundColor: "#f5f5f5",
-                "&:hover": { backgroundColor: "#ececec" },
+                fontSize: 14,
+                height: "100%",
+                padding: "6px 16px",
+                borderColor: "#e0e0e0",
+                color: "#1e1e1e",
+                "&:hover": { borderColor: "#0F172A" },
               }}
             >
-              <FormControl size="small" sx={{ minWidth: 80 }}>
-                <InputLabel sx={{ fontSize: 14 }}>Năm</InputLabel>
-                <Select
-                  value={year}
-                  onChange={handleYearChange}
-                  label="Năm"
-                  sx={{
-                    fontSize: 14,
-                    "& .MuiSelect-select": { py: 1 },
-                    backgroundColor: "#fff",
-                    borderRadius: "4px",
-                  }}
-                >
-                  <MenuItem value="" sx={{ fontSize: 14 }}>
-                    Tất cả
-                  </MenuItem>
-                  {years.map((y) => (
-                    <MenuItem key={y} value={y} sx={{ fontSize: 14 }}>
-                      {y}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl size="small" sx={{ minWidth: 80 }} disabled={!year}>
-                <InputLabel sx={{ fontSize: 14 }}>Tháng</InputLabel>
-                <Select
-                  value={month}
-                  onChange={handleMonthChange}
-                  label="Tháng"
-                  sx={{
-                    fontSize: 14,
-                    "& .MuiSelect-select": { py: 1 },
-                    backgroundColor: "#fff",
-                    borderRadius: "4px",
-                  }}
-                >
-                  <MenuItem value="" sx={{ fontSize: 14 }}>
-                    Tất cả
-                  </MenuItem>
-                  {months.map((m) => (
-                    <MenuItem key={m} value={m} sx={{ fontSize: 14 }}>
-                      {m}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl size="small" sx={{ minWidth: 80 }} disabled={!month}>
-                <InputLabel sx={{ fontSize: 14 }}>Ngày</InputLabel>
-                <Select
-                  value={day}
-                  onChange={handleDayChange}
-                  label="Ngày"
-                  sx={{
-                    fontSize: 14,
-                    "& .MuiSelect-select": { py: 1 },
-                    backgroundColor: "#fff",
-                    borderRadius: "4px",
-                  }}
-                >
-                  <MenuItem value="" sx={{ fontSize: 14 }}>
-                    Tất cả
-                  </MenuItem>
-                  {days.map((d) => (
-                    <MenuItem key={d} value={d} sx={{ fontSize: 14 }}>
-                      {d}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Paper>
+              Lọc
+            </Button>
           </Grid>
           <Grid item xs={12} sm={2}>
             <Button
               variant="outlined"
               onClick={handleResetFilter}
-              sx={{ fontSize: 14, height: "100%", padding: "6px 16px" }}
-              disabled={fetching}
+              sx={{
+                fontSize: 14,
+                height: "100%",
+                padding: "6px 16px",
+                borderColor: "#e0e0e0",
+                color: "#1e1e1e",
+                "&:hover": { borderColor: "#0F172A" },
+              }}
             >
               Reset
             </Button>
           </Grid>
         </Grid>
 
-        {/* Số lượng tin nhắn */}
+        {/* Dialog lọc ngày */}
+        <Dialog
+          open={openFilterDialog}
+          onClose={handleCloseFilterDialog}
+          PaperProps={{
+            sx: {
+              borderRadius: "12px",
+              p: 2,
+              minWidth: { xs: "90%", sm: 400 },
+            },
+          }}
+        >
+          <DialogTitle sx={{ fontSize: 16, fontWeight: 600 }}>
+            Chọn ngày lọc
+          </DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Chọn ngày"
+              type="date"
+              value={filterDate}
+              onChange={handleFilterDateChange}
+              fullWidth
+              InputLabelProps={{ shrink: true, sx: { fontSize: 14 } }}
+              sx={{ mt: 2 }}
+              inputProps={{ max: new Date().toISOString().split("T")[0] }}
+            />
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button
+              onClick={handleCloseFilterDialog}
+              sx={{
+                fontSize: 13,
+                color: "#1e1e1e",
+                textTransform: "none",
+                "&:hover": { bgcolor: "#f0f2f5" },
+              }}
+            >
+              Hủy
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleApplyFilter}
+              sx={{
+                bgcolor: "#0F172A",
+                color: "#fff",
+                fontSize: 13,
+                textTransform: "none",
+                px: 3,
+                "&:hover": { bgcolor: "#1e293b" },
+                borderRadius: "8px",
+              }}
+            >
+              Áp dụng
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Số lượng hội thoại */}
         <Typography sx={{ mb: 2, fontSize: 18, fontWeight: "bold" }}>
-         Có {Object.keys(messagesBySession).length} hội thoại
+          Có {Object.keys(messagesBySession).length} hội thoại
         </Typography>
 
-        {/* Hiển thị tin nhắn */}
+        {/* Danh sách hội thoại */}
         {Object.keys(messagesBySession).length === 0 ? (
           <Typography sx={{ fontSize: 14 }}>
-            Không có tin nhắn nào để hiển thị.
+            Không có hội thoại nào để hiển thị.
           </Typography>
         ) : (
-          Object.keys(messagesBySession).map((sessionId) => (
-            <Box key={sessionId} sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" sx={{ mb: 1, fontSize: 14 }}>
-                Chat Session ID: {sessionId}
-              </Typography>
-              <Paper sx={{ width: "100%", overflowX: "auto" }}>
-                <Table sx={{ minWidth: 650 }} aria-label="chat history table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ fontWeight: "bold", fontSize: 14 }}>
-                        ID Hội thoại
+          <Paper sx={{ width: "100%", overflowX: "auto" }}>
+            <Table sx={{ minWidth: 650 }} aria-label="conversation list table">
+              <TableHead>
+                <TableRow>
+                  <TableCell
+                    sx={{ fontWeight: "bold", fontSize: 14, width: "30%" }}
+                  >
+                    ID Hội thoại
+                  </TableCell>
+                  <TableCell
+                    sx={{ fontWeight: "bold", fontSize: 14, width: "30%" }}
+                  >
+                    Thời gian
+                  </TableCell>
+                  <TableCell
+                    sx={{ fontWeight: "bold", fontSize: 14, width: "40%" }}
+                  >
+                    Website
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {Object.keys(messagesBySession).map((sessionId) => {
+                  const latestMessage = messagesBySession[sessionId].reduce(
+                    (latest, msg) =>
+                      new Date(msg.inserted_at) > new Date(latest.inserted_at)
+                        ? msg
+                        : latest,
+                    messagesBySession[sessionId][0]
+                  );
+                  return (
+                    <TableRow
+                      key={sessionId}
+                      onClick={() => handleOpenDialog(sessionId)}
+                      sx={{
+                        cursor: "pointer",
+                        "&:hover": { backgroundColor: "#f5f5f5" },
+                      }}
+                    >
+                      <TableCell sx={{ fontSize: 14, width: "30%" }}>
+                        {sessionId}
                       </TableCell>
-                      <TableCell sx={{ fontWeight: "bold", fontSize: 14 }}>
-                        Thời gian
+                      <TableCell sx={{ fontSize: 14, width: "30%" }}>
+                        {latestMessage.inserted_at}
                       </TableCell>
-                      <TableCell sx={{ fontWeight: "bold", fontSize: 14 }}>
-                        Tin nhắn
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: "bold", fontSize: 14 }}>
-                        Người gửi
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: "bold", fontSize: 14 }}>
-                        Website
+                      <TableCell sx={{ fontSize: 14, width: "40%" }}>
+                        {latestMessage.domain}
                       </TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {messagesBySession[sessionId].map((msg, index) => (
-                      <TableRow key={`${msg.sessionId}-${index}`}>
-                        <TableCell sx={{ fontSize: 14 }}>
-                          {msg.sessionId}
-                        </TableCell>
-                        <TableCell sx={{ fontSize: 14 }}>
-                          {msg.inserted_at}
-                        </TableCell>
-                        <TableCell sx={{ fontSize: 14 }}>
-                          {msg.message}
-                        </TableCell>
-                        <TableCell sx={{ fontSize: 14 }}>
-                          {msg.sender === "bot" ? "Bot" : "User"}
-                        </TableCell>
-                        <TableCell sx={{ fontSize: 14 }}>
-                          {msg.domain}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Paper>
-              <Divider sx={{ my: 2 }} />
-            </Box>
-          ))
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </Paper>
         )}
 
-        {/* Pagination */}
+        {/* Phân trang */}
         <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
           <Pagination
             count={Math.ceil(totalConversations / limit)}
@@ -518,6 +524,80 @@ function DetailConversation() {
             disabled={fetching}
           />
         </Box>
+
+        {/* Dialog hiển thị lịch sử tin nhắn */}
+        <Dialog
+          open={openDialog}
+          onClose={handleCloseDialog}
+          maxWidth="md"
+          fullWidth
+          PaperProps={{
+            sx: { borderRadius: "12px", p: 1 },
+          }}
+        >
+          <DialogTitle sx={{ fontSize: 16, fontWeight: 600 }}>
+            Lịch sử hội thoại - Chat Session ID: {selectedSessionId}
+          </DialogTitle>
+          <DialogContent>
+            {selectedSessionId && messagesBySession[selectedSessionId] ? (
+              <Table sx={{ minWidth: 650 }} aria-label="chat history table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: "bold", fontSize: 14 }}>
+                      ID Hội thoại
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: "bold", fontSize: 14 }}>
+                      Thời gian
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: "bold", fontSize: 14 }}>
+                      Tin nhắn
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: "bold", fontSize: 14 }}>
+                      Người gửi
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: "bold", fontSize: 14 }}>
+                      Website
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {messagesBySession[selectedSessionId].map((msg, index) => (
+                    <TableRow key={`${msg.sessionId}-${index}`}>
+                      <TableCell sx={{ fontSize: 14 }}>
+                        {msg.sessionId}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: 14 }}>
+                        {msg.inserted_at}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: 14 }}>{msg.message}</TableCell>
+                      <TableCell sx={{ fontSize: 14 }}>
+                        {msg.sender === "bot" ? "Bot" : "User"}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: 14 }}>{msg.domain}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <Typography sx={{ fontSize: 14 }}>
+                Không có tin nhắn để hiển thị.
+              </Typography>
+            )}
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button
+              onClick={handleCloseDialog}
+              sx={{
+                fontSize: 13,
+                color: "#1e1e1e",
+                textTransform: "none",
+                "&:hover": { bgcolor: "#f0f2f5" },
+              }}
+            >
+              Đóng
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </div>
   );

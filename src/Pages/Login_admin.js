@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
 
-const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
+const API_BASE_URL = "http://localhost:5000";
 
 const inputStyle = {
   "& .MuiInputBase-root": {
@@ -133,7 +133,7 @@ function Login() {
   };
 
   const handleAddNewWebsite = () => {
-    navigate("/add_website");
+    navigate("/add-web");
   };
 
   return (

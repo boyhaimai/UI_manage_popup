@@ -15,6 +15,7 @@ import {
   MenuItem,
   Alert,
   Snackbar,
+  Tooltip,
 } from "@mui/material";
 import { Add, Save } from "@mui/icons-material";
 import classNames from "classnames/bind";
@@ -25,13 +26,21 @@ import Avatar from "~/Components/Avatar/Avatar";
 import useDebounce from "~/hooks/useDebounce";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
+const API_BASE_URL = "http://localhost:5000";
 
 const inputStyle = {
   backgroundColor: "#f7f8fa",
   color: "#1e1e1e",
   fontSize: 13,
 };
+
+// Mảng cấu hình cho các vị trí của tiện ích
+const positionOptions = [
+  { name: "Trên cùng bên trái", value: "top-left", activeIndex: 0 },
+  { name: "Trên cùng bên phải", value: "top-right", activeIndex: 2 },
+  { name: "Dưới cùng bên trái", value: "bottom-left", activeIndex: 9 },
+  { name: "Dưới cùng bên phải", value: "bottom-right", activeIndex: 11 },
+];
 
 function ManagePage() {
   const [form, setForm] = useState({
@@ -43,7 +52,7 @@ function ManagePage() {
     title: "",
     avatar: "",
     welcomeMessage: "",
-    position: "bottom-right",
+    position: "bottom-right", // Giá trị mặc định
     linkContact: "",
   });
   const [stats, setStats] = useState({ total: 0, today: 0, month: 0 });
@@ -160,6 +169,7 @@ function ManagePage() {
 
   useEffect(() => {
     fetchConfigAndStats();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   useEffect(() => {
@@ -222,7 +232,8 @@ function ManagePage() {
       }
     }
   };
-
+  
+  // Hàm xử lý khi thay đổi vị trí
   const handlePositionChange = (value) => {
     setForm({ ...form, position: value });
   };
@@ -521,7 +532,7 @@ function ManagePage() {
             <Box
               sx={{
                 display: "flex",
-                alignItems: "center",
+                alignItems: "flex-start",
                 justifyContent: "space-between",
               }}
             >
@@ -562,27 +573,6 @@ function ManagePage() {
                           }
                         />
                       </Box>
-                      {/* <IconButton
-                        sx={{
-                          position: "absolute",
-                          top: -6,
-                          right: 10,
-                          bgcolor: "#fff",
-                          border: "1px solid #ccc",
-                          fontSize: "10px",
-                          padding: "2px",
-                        }}
-                        onClick={() => fileInputRef.current.click()}
-                      >
-                        <Add sx={{ fontSize: "14px" }} />
-                      </IconButton>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        style={{ display: "none" }}
-                        accept="image/*"
-                        onChange={handleFileChange}
-                      /> */}
                     </Box>
                     <Box>
                       <Typography fontSize={13} color="text.secondary">
@@ -619,7 +609,7 @@ function ManagePage() {
                     sx={{ "& .MuiInputBase-input": inputStyle }}
                   />
 
-                  <Typography fontSize={16} mb={1} fontWeight="bold">
+                  <Typography fontSize={16} my={1} fontWeight="bold">
                     Tình trạng
                   </Typography>
                   <Box
@@ -694,7 +684,7 @@ function ManagePage() {
                             border:
                               form.themeColor === color
                                 ? "2px solid #00897b"
-                                : "none",
+                                : "1px solid transparent",
                             borderRadius: "6px",
                             "&:hover": { opacity: 0.9 },
                           }}
@@ -762,7 +752,7 @@ function ManagePage() {
                           border:
                             form.textColor === color
                               ? "2px solid #00897b"
-                              : "none",
+                              : "1px solid transparent",
                           borderRadius: "6px",
                           "&:hover": { opacity: 0.9 },
                         }}
@@ -929,139 +919,28 @@ function ManagePage() {
                   <Typography fontSize={16} mb={1} fontWeight="bold">
                     Vị trí tiện ích:
                   </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                      <Button
-                        fullWidth
-                        variant={
-                          form.position === "bottom-right"
-                            ? "contained"
-                            : "outlined"
-                        }
-                        onClick={() => handlePositionChange("bottom-right")}
-                        sx={{
-                          fontSize: "12px",
-                          backgroundColor:
-                            form.position === "bottom-right"
-                              ? "#0F172A"
-                              : "transparent",
-                          color:
-                            form.position === "bottom-right"
-                              ? "#fff"
-                              : "#0F172A",
-                          fontWeight: "bold",
-                          borderRadius: "8px",
-                          "&:hover": {
-                            backgroundColor:
-                              form.position === "bottom-right"
-                                ? "#1e293b"
-                                : "#f0f2f5",
-                            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                          },
-                          padding: "4px 10px",
-                        }}
-                      >
-                        Phía dưới bên phải
-                      </Button>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Button
-                        fullWidth
-                        variant={
-                          form.position === "bottom-left"
-                            ? "contained"
-                            : "outlined"
-                        }
-                        onClick={() => handlePositionChange("bottom-left")}
-                        sx={{
-                          fontSize: "12px",
-                          backgroundColor:
-                            form.position === "bottom-left"
-                              ? "#0F172A"
-                              : "transparent",
-                          color:
-                            form.position === "bottom-left"
-                              ? "#fff"
-                              : "#0F172A",
-                          fontWeight: "bold",
-                          borderRadius: "8px",
-                          "&:hover": {
-                            backgroundColor:
-                              form.position === "bottom-left"
-                                ? "#1e293b"
-                                : "#f0f2f5",
-                            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                          },
-                          padding: "4px 10px",
-                        }}
-                      >
-                        Dưới cùng bên trái
-                      </Button>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Button
-                        fullWidth
-                        variant={
-                          form.position === "top-right"
-                            ? "contained"
-                            : "outlined"
-                        }
-                        onClick={() => handlePositionChange("top-right")}
-                        sx={{
-                          fontSize: "12px",
-                          backgroundColor:
-                            form.position === "top-right"
-                              ? "#0F172A"
-                              : "transparent",
-                          color:
-                            form.position === "top-right" ? "#fff" : "#0F172A",
-                          fontWeight: "bold",
-                          borderRadius: "8px",
-                          "&:hover": {
-                            backgroundColor:
-                              form.position === "top-right"
-                                ? "#1e293b"
-                                : "#f0f2f5",
-                            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                          },
-                          padding: "4px 10px",
-                        }}
-                      >
-                        Phía trên bên phải
-                      </Button>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Button
-                        fullWidth
-                        variant={
-                          form.position === "top-left"
-                            ? "contained"
-                            : "outlined"
-                        }
-                        onClick={() => handlePositionChange("top-left")}
-                        sx={{
-                          fontSize: "12px",
-                          backgroundColor:
-                            form.position === "top-left"
-                              ? "#0F172A"
-                              : "transparent",
-                          color:
-                            form.position === "top-left" ? "#fff" : "#0F172A",
-                          fontWeight: "bold",
-                          borderRadius: "8px",
-                          "&:hover": {
-                            backgroundColor:
-                              form.position === "top-left"
-                                ? "#1e293b"
-                                : "#f0f2f5",
-                            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                          },
-                          padding: "4px 10px",
-                        }}
-                      >
-                        Phía trên bên trái
-                      </Button>
-                    </Grid>
+                  <Grid container spacing={1} sx={{ maxWidth: "100%", ml: 1 }}>
+                    {positionOptions.map((option) => (
+                      <Grid item xs={6} key={option.value}>
+                       <Tooltip title={option.name} placement="top">
+                        <Box
+                          className={cx("position_wrapper", {
+                            position_wrapper_active: form.position === option.value,
+                          })}
+                          onClick={() => handlePositionChange(option.value)}
+                        >
+                          {[...Array(12)].map((_, index) => (
+                            <div
+                              key={index}
+                              className={cx("position", {
+                                position_active: index === option.activeIndex,
+                              })}
+                            ></div>
+                          ))}
+                        </Box>
+                        </Tooltip>
+                      </Grid>
+                    ))}
                   </Grid>
                 </Box>
               </Box>

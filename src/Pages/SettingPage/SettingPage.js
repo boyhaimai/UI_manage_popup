@@ -26,7 +26,7 @@ import styles from "./SettingPage.module.scss";
 
 const cx = classNames.bind(styles);
 
-const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
+const API_BASE_URL = "http://localhost:5000";
 
 const inputStyle = {
   "& .MuiInputBase-root": {
@@ -64,7 +64,7 @@ function SettingPage() {
   });
   const [adminInfo, setAdminInfo] = useState({
     name: "",
-    email: "",
+    phoneNumber: "", // Thêm phoneNumber
     avatar: "",
   });
   const [previewAvatar, setPreviewAvatar] = useState(""); // Preview ảnh local
@@ -100,7 +100,7 @@ function SettingPage() {
       if (response.data.success) {
         setAdminInfo({
           name: response.data.admin.name,
-          email: response.data.admin.email,
+          phoneNumber: response.data.admin.phoneNumber, // Thêm phoneNumber
           avatar: response.data.admin.avatar || "",
         });
         setPreviewAvatar(response.data.admin.avatar || "");
@@ -311,72 +311,105 @@ function SettingPage() {
         <Typography sx={{ fontSize: 16, fontWeight: "bold", mb: 3 }}>
           Thông tin cơ bản
         </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: "center", mb: 2 }}>
-              <Box position="relative" sx={{ mb: 1 }}>
+        <Grid container>
+          <Grid item xs={12} width={"100%"}>
+            <Box
+              sx={{
+                alignItems: "center",
+                gap: 3,
+                flexWrap: "wrap",
+                mb: 3,
+                width: "100%",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  width: "100%",
+                  justifyContent: "end",
+                }}
+              >
+                <Box
+                  sx={{
+                    fontSize: 14,
+                    color: "#909298",
+                    fontWeight: "bold",
+                    mr: 1,
+                  }}
+                >
+                  {adminInfo.name}
+                </Box>
                 <Avatar
-                  src={previewAvatar} // Now 'previewAvatar' will always be a URL
+                  src={previewAvatar}
                   alt={adminInfo.name}
-                  sx={{ width: 100, height: 100, mx: "auto", fontSize: 40 }}
+                  sx={{ width: 48, height: 48, fontSize: 40 }}
                   imgProps={{
                     onLoad: () => setImageLoaded(true),
                     onError: () => setImageLoaded(false),
                   }}
                 >
-                  {/* fallback chữ cái chỉ hiển thị nếu không có ảnh hoặc load lỗi */}
-                  {(!previewAvatar || !imageLoaded)
+                  {!previewAvatar || !imageLoaded
                     ? adminInfo.name?.charAt(0)?.toUpperCase()
                     : null}
                 </Avatar>
-
-                {/* The IconButton and input type="file" are removed */}
               </Box>
-              <Typography fontSize={13} color="text.secondary" mb={1}>
-                Đề xuất ảnh kích thước tối thiểu 512 × 512.
-              </Typography>
-              <Typography fontSize={16} fontWeight="bold" mb={1}>
-                URL ảnh
-              </Typography>
-              <TextField
-                fullWidth
-                size="small"
-                name="avatar"
-                value={adminInfo.avatar}
-                onChange={handleInputChange}
-                error={!!avatarError}
-                helperText={avatarError}
-                sx={{ ...inputStyle, maxWidth: 300, mx: "auto" }}
-                // removed 'disabled={uploading}'
-              />
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={8}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 4,
+                  flexWrap: "wrap",
+                  width: "100%",
+                  mt: 2,
+                  mb: 2,
+                }}
+              >
+                <Box sx={{ width: "48%" }}>
+                  <Typography fontSize={16} fontWeight="bold" mb={1}>
+                    Tên
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    required
+                    name="name"
+                    value={adminInfo.name}
+                    onChange={handleInputChange}
+                    sx={{ ...inputStyle }}
+                    error={!!errors.name}
+                    helperText={errors.name}
+                  />
+                </Box>
+
+                <Box sx={{ width: "48%" }}>
+                  <Typography fontSize={16} fontWeight="bold" mb={1}>
+                    Số điện thoại
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    required
+                    value={adminInfo.phoneNumber}
+                    InputProps={{ readOnly: true }}
+                    sx={{ ...inputStyle }}
+                  />
+                </Box>
+              </Box>
+
+              <Box sx={{ flex: 1, width: "48%" }}>
+                <Typography fontSize={16} fontWeight="bold" mb={1}>
+                  URL ảnh
+                </Typography>
                 <TextField
                   fullWidth
-                  label="Tên"
-                  required
-                  name="name"
-                  value={adminInfo.name}
+                  name="avatar"
+                  value={adminInfo.avatar}
                   onChange={handleInputChange}
-                  sx={{ ...inputStyle }}
-                  error={!!errors.name}
-                  helperText={errors.name}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  required
-                  value={adminInfo.email}
-                  InputProps={{ readOnly: true }}
+                  error={!!avatarError}
+                  helperText={avatarError}
                   sx={{ ...inputStyle }}
                 />
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </Grid>
         </Grid>
 
@@ -393,7 +426,7 @@ function SettingPage() {
             variant="text"
             onClick={handleOpenChangePassword}
             sx={{
-              color: "#0F172A",
+              color: "var(--c_red_light)",
               fontSize: 13,
               textTransform: "none",
               p: 0,
