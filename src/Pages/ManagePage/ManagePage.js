@@ -26,7 +26,7 @@ import Avatar from "~/Components/Avatar/Avatar";
 import useDebounce from "~/hooks/useDebounce";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = "ai.bang.vawayai.com";
+const API_BASE_URL = "https://ai.bang.vawayai.com";
 
 const inputStyle = {
   backgroundColor: "#f7f8fa",

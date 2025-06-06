@@ -28,7 +28,7 @@ import styles from "./Sidebar.module.scss";
 import Avatar from "~/Components/Avatar/Avatar";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = "ai.bang.vawayai.com";
+const API_BASE_URL = "https://ai.bang.vawayai.com";
 
 function Sidebar() {
   const [anchorEl, setAnchorEl] = useState(null);
