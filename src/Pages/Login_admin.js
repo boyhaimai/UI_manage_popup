@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
 
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "ai.bang.vawayai.com";
 
 const inputStyle = {
   "& .MuiInputBase-root": {

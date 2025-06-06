@@ -19,7 +19,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "./CustomizeUI.module.scss";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "ai.bang.vawayai.com";
 
 const presetColors = ["#1976d2", "#d32f2f", "#7b1fa2", "#03A84E"];
 
@@ -134,7 +134,7 @@ export default function ChatWidgetSetupUI() {
       );
       formData.append("position", "bottom-right");
       formData.append("historyEnabled", "true");
-      formData.append("serverUrl", "http://localhost:5000");
+      formData.append("serverUrl", "ai.bang.vawayai.com");
       formData.append("webhookUrl", "https://bang.daokhaccu.top/webhook/save_history");
 
       if (!useDefault) {

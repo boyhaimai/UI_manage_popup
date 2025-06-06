@@ -3,7 +3,7 @@ import { Box, Typography, TextField, Button, Grid, Alert } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "ai.bang.vawayai.com";
 
 export default function CopyCode() {
   const [isHovered, setIsHovered] = useState(false);

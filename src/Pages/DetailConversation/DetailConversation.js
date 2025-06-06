@@ -34,7 +34,7 @@ import classNames from "classnames/bind";
 import styles from "./DetailConversation.module.scss";
 const cx = classNames.bind(styles);
 
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "ai.bang.vawayai.com";
 
 function DetailConversation() {
   const navigate = useNavigate();
