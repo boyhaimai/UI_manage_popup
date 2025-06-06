@@ -26,7 +26,7 @@ import styles from "./SettingPage.module.scss";
 
 const cx = classNames.bind(styles);
 
-const API_BASE_URL = "https://ai.bang.vawayai.com";
+const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
 
 const inputStyle = {
   "& .MuiInputBase-root": {

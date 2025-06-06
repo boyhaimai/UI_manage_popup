@@ -13,7 +13,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "https://ai.bang.vawayai.com";
+const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
 
 function AddWeb() {
   const [website, setWebsite] = useState("");
