@@ -12,19 +12,24 @@
   font-size: 16px;
   font-weight: 700;
   padding: 8px 16px;
-  color: var(--bg_write_chat);
   width: 100%;
   line-height: 25px;
   align-items: center;
   display: flex;
   cursor: pointer;
-  color: var(--bg_write_chat);
+  color: var(--layer_background) !important;
 }
 .icon_menu {
   color: var(--bg_write_chat) !important;
   font-size: 20px !important;
   margin-right: -10px !important;
 }
+.icon_menu_sidebar {
+  color: var(--layer_background) !important;
+  font-size: 20px !important;
+  margin-right: 5px !important;
+}
+
 .link_about {
   font-size: 13px;
   font-weight: 700;

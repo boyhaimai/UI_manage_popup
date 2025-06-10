@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   Button,
@@ -6,11 +6,15 @@ import {
   Alert,
   Box,
   Avatar,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
+const TURNSTILE_SITE_KEY = "0x4AAAAAABgmhl75Zpxjdvs7"; // Thay bằng Site Key của bạn
 
 const inputStyle = {
   "& .MuiInputBase-root": {
@@ -42,10 +46,34 @@ function Register() {
     phoneNumber: "",
     password: "",
     confirmPassword: "",
+    turnstileToken: "", // Thêm trường để lưu token Turnstile
   });
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [reShowPassword, setReShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  // Hàm xử lý callback từ Turnstile
+  const handleTurnstileSuccess = (token) => {
+    setForm({ ...form, turnstileToken: token });
+    const _SECURITY_TOKEN = token; // Lưu token vào biến toàn cục
+    setErrors({ ...errors, turnstileToken: "" });
+  };
+  useEffect(() => {
+    const container = document.getElementById("turnstile-register");
+    if (window.turnstile && container && container.children.length === 0) {
+      window.turnstile.render("#turnstile-register", {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: handleTurnstileSuccess,
+      });
+    }
+
+    return () => {
+      if (container) container.innerHTML = "";
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,11 +90,21 @@ function Register() {
     if (!form.phoneNumber || !phoneRegex.test(form.phoneNumber)) {
       newErrors.phoneNumber = "Số điện thoại không hợp lệ.";
     }
-    if (!form.password || form.password.length < 8) {
-      newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự.";
+    const strongRegex =
+      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!]).{8,}$/;
+
+    if (!form.password) {
+      newErrors.password = "Vui lòng nhập mật khẩu.";
+    } else if (!strongRegex.test(form.password)) {
+      newErrors.password =
+        "Mật khẩu phải từ 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.";
     }
+
     if (form.password !== form.confirmPassword) {
       newErrors.confirmPassword = "Mật khẩu không khớp.";
+    }
+    if (!form.turnstileToken) {
+      newErrors.turnstileToken = "Vui lòng xác minh bạn không phải là bot.";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -85,6 +123,7 @@ function Register() {
           name: form.name,
           phoneNumber: form.phoneNumber,
           password: form.password,
+          turnstileToken: form.turnstileToken, // Gửi token Turnstile
         },
         { withCredentials: true }
       );
@@ -138,7 +177,13 @@ function Register() {
           </Avatar>
         </Box>
         <Typography
-          sx={{ fontSize: 16, fontWeight: "bold", mb: 3, color: "#0F172A", textAlign: "center" }}
+          sx={{
+            fontSize: 16,
+            fontWeight: "bold",
+            mb: 3,
+            color: "#0F172A",
+            textAlign: "center",
+          }}
         >
           Đăng ký Admin
         </Typography>
@@ -151,6 +196,11 @@ function Register() {
         {success && (
           <Alert severity="success" sx={{ mb: 2, fontSize: 13 }}>
             {success}
+          </Alert>
+        )}
+        {errors.turnstileToken && (
+          <Alert severity="error" sx={{ mb: 2, fontSize: 13 }}>
+            {errors.turnstileToken}
           </Alert>
         )}
 
@@ -188,7 +238,24 @@ function Register() {
           </Typography>
           <TextField
             name="password"
-            type="password"
+            type={showPassword ? "text" : "password"}
+            InputProps={{
+              endAdornment:
+                form.password.length > 0 ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? (
+                        <VisibilityOff sx={{ fontSize: 20 }} />
+                      ) : (
+                        <Visibility sx={{ fontSize: 20 }} />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+            }}
             value={form.password}
             onChange={handleChange}
             fullWidth
@@ -203,7 +270,24 @@ function Register() {
           </Typography>
           <TextField
             name="confirmPassword"
-            type="password"
+            type={reShowPassword ? "text" : "password"}
+            InputProps={{
+              endAdornment:
+                form.confirmPassword.length > 0 ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setReShowPassword(!reShowPassword)}
+                      edge="end"
+                    >
+                      {reShowPassword ? (
+                        <VisibilityOff sx={{ fontSize: 20 }} />
+                      ) : (
+                        <Visibility sx={{ fontSize: 20 }} />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+            }}
             value={form.confirmPassword}
             onChange={handleChange}
             fullWidth
@@ -213,10 +297,13 @@ function Register() {
             error={!!errors.confirmPassword}
             helperText={errors.confirmPassword}
           />
+          <div id="turnstile-register" style={{ marginBottom: "16px" }}></div>
+
           <Button
             type="submit"
             variant="contained"
             fullWidth
+            disabled={!form.turnstileToken}
             sx={{
               fontSize: 13,
               bgcolor: "#0F172A",

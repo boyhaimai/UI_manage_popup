@@ -12,8 +12,10 @@ import {
   FormControl,
   InputLabel,
   Box,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
-import { Add } from "@mui/icons-material";
+import { Add, Visibility, VisibilityOff } from "@mui/icons-material";
 
 const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
 
@@ -50,6 +52,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [websites, setWebsites] = useState([]);
   const [selectedWebsite, setSelectedWebsite] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -127,7 +130,8 @@ function Login() {
       .catch((err) => {
         console.error("Select website error:", err);
         setErrors({
-          server: err.response?.data?.message || "Không thể kết nối đến server.",
+          server:
+            err.response?.data?.message || "Không thể kết nối đến server.",
         });
       });
   };
@@ -160,7 +164,13 @@ function Login() {
         }}
       >
         <Typography
-          sx={{ fontSize: 16, fontWeight: "bold", mb: 3, color: "#0F172A", textAlign: "center" }}
+          sx={{
+            fontSize: 16,
+            fontWeight: "bold",
+            mb: 3,
+            color: "#0F172A",
+            textAlign: "center",
+          }}
         >
           Đăng nhập Admin
         </Typography>
@@ -172,7 +182,7 @@ function Login() {
         )}
 
         {!websites.length ? (
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} autoComplete="off">
             <Typography sx={{ fontSize: 13, mb: 0.5, color: "#0F172A" }}>
               Số điện thoại
             </Typography>
@@ -192,7 +202,25 @@ function Login() {
             </Typography>
             <TextField
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
+              InputProps={{
+                endAdornment:
+                  form.password.length > 0 ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? (
+                          <VisibilityOff sx={{ fontSize: 20 }} />
+                        ) : (
+                          <Visibility sx={{ fontSize: 20 }} />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+              }}
+              autoComplete="new-password"
               value={form.password}
               onChange={handleChange}
               fullWidth
@@ -235,7 +263,12 @@ function Login() {
         ) : (
           <Box>
             <Typography
-              sx={{ fontSize: 16, fontWeight: "bold", mb: 3, textAlign: "center" }}
+              sx={{
+                fontSize: 16,
+                fontWeight: "bold",
+                mb: 3,
+                textAlign: "center",
+              }}
             >
               Chọn website để quản lý
             </Typography>

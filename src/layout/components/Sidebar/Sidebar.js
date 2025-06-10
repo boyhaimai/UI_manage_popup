@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import classNames from "classnames/bind";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 import MenuCustom from "./Menu";
@@ -11,6 +11,8 @@ import {
   ErrorRounded,
   Forum,
   HelpRounded,
+  Logout,
+  Person,
   SettingsRounded,
   Telegram,
 } from "@mui/icons-material";
@@ -106,12 +108,12 @@ function Sidebar() {
           title="Quản lý trò chuyện"
           to={config.routes.DetailConversation}
           icon={<Forum className={cx("icon_menu")} />}
-        />       
-        {/* <MenuItemCustom
+        />
+        <MenuItemCustom
           title="Tham gia trò chuyện"
           to={config.routes.message}
           icon={<Telegram className={cx("icon_menu")} />}
-        />        */}
+        />
         <Box className={cx("support")}>
           <MenuItemCustom
             title="Settings"
@@ -123,11 +125,11 @@ function Sidebar() {
             to="https://vaway.vn/"
             icon={<ErrorRounded className={cx("icon_menu")} />}
           />
-          <MenuItemCustom
+          {/* <MenuItemCustom
             title="Support"
             to="/feedback"
             icon={<HelpRounded className={cx("icon_menu")} />}
-          />
+          /> */}
         </Box>
       </MenuCustom>
       <Box
@@ -146,7 +148,9 @@ function Sidebar() {
           backgroundColor: "#fff",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
+        <Box
+          sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}
+        >
           <Avatar
             src={adminInfo?.avatar || ""}
             alt={adminInfo?.name || ""}
@@ -175,7 +179,8 @@ function Sidebar() {
                 maxWidth: "150px",
               }}
             >
-              {adminInfo?.phoneNumber || ""} {/* Sửa từ email thành phoneNumber */}
+              {adminInfo?.phoneNumber || ""}{" "}
+              {/* Sửa từ email thành phoneNumber */}
             </Typography>
           </Box>
         </Box>
@@ -210,11 +215,11 @@ function Sidebar() {
           }}
         >
           <MenuItem onClick={handleClose}>
-            <i className="fas fa-user" style={{ fontSize: 14 }}></i>
-            Xem hồ sơ
+            <Person className={cx("icon_menu_sidebar")} />
+            <Link to={config.routes.profile}> Xem hồ sơ</Link>
           </MenuItem>
           <MenuItem onClick={handleLogout}>
-            <i className="fas fa-sign-out-alt" style={{ fontSize: 14 }}></i>
+            <Logout className={cx("icon_menu_sidebar")} />
             Đăng xuất
           </MenuItem>
         </Menu>

@@ -1,8 +1,14 @@
 @import "normalize.css";
+@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
 
 :root {
+  --background-default: #f7f8fa;
+  --background-paper: #fff;
+  --text-primary: #1e1e1e;
+  --text-secondary: #909298;
+
   --font-body: "zalo-font", sans-serif;
-  --font-size: 1.6rem;
+  --font-size: 1.4rem;
   --padding: 10px;
   --line-height: 1.5;
   --box_shadow: 0px 1px 1px rgb(0 0 0 / 12%);
@@ -16,41 +22,32 @@
   --height_input_chat: 54px;
   --width_sibar: 210px; // width sidebar
   --width_box_chat: 738px; //pc
-  --heigh_box_chat: 695.2px; // height pc defaul  
-  --heigh_box_chat_mb:620px; // heightmobile defaul  
+  --heigh_box_chat: 695.2px; // height pc defaul
+  --heigh_box_chat_mb: 620px; // heightmobile defaul
   --width_box_chat_mb: 360px; // width mobile
   --height_status_bar: 31px;
   --height_box_chat: 533px;
 
   // background colors
-  --bg_box_mess: #ebecf0;
-  --bg_mess: #dbebff;
-  --bg_time: rgba(0, 0, 0, 0.2);
+
   --layer_background: #fff;
   --background_keep_bar_scroll: #b5b5b5;
-  --bg_add_friend_info: hsla(0, 0%, 100%, 0.85);
-  --battery_gray: rgba(0, 0, 0, 0.3);
 
   //colors
-  --color_time: #fafafa;
   --text_color: #081b3a;
   --c_boder: rgba(0, 0, 0, 0.15);
   --c_icon: #5a6981; //text secondary
   --c_active: #37b361;
   --c_active_hover: #37b361d1;
-  --c_number: #44546f;
   --border: rgba(0, 0, 0, 0.1);
   --black: #000;
   --c_white: #fff;
   --c_red_light: rgb(254, 44, 85);
-  --c_aqua:#10e6d4;
+  --c_aqua: #10e6d4;
   --c_letter: #545454;
 
   //color mb
 
-  --c_header_mb: linear-gradient(135deg, #1e90ff, #00bfff);
-  --bg_box_message_mb: #e1e9f2;
-  --bg_write_chat: #ffffff;
   --bg_sidebar: #262626;
   --bg_body: #f7f7f9;
   //shadow
@@ -58,59 +55,37 @@
     0px 8px 12px 0px rgba(21, 39, 71, 0.15);
 
   // font
-  @font-face {
-    font-family: zalo-font;
-    src: url(../assets/fonts/zalo-font.545493af7354b9cb46c1ce55dc10e258.woff2);
-    font-weight: 400;
-    font-style: normal;
-  }
-  @font-face {
-    font-family: segoe_ui;
-    src: url(../assets//fonts//segoe-ui//SEGOEUI.TTF);
-  }
+  --lato_font: "Lato", sans-serif;
 
   // --b_liner: linear-gradient(135deg, #fffbd5, #b20a2c);
   // --b_liner_2: linear-gradient(to bottom, #afc8fd, #fafcff);
 }
+
+[data-theme="dark"] {
+  --background-default: #0f172a;
+  --background-paper: #1e293b;
+  --text-primary: #fff;
+  --text-secondary: #b0b0b0;
+}
+
 html,
 body {
   overflow: hidden; /* Ẩn thanh cuộn mặc định */
   height: 100%; /* Đảm bảo body chiếm full màn hình */
   background-color: var(--bg_body);
-}
-html {
-  font-size: 62.5%;
-  height: 100%;
   font-size: var(--font-size);
-  font-family: var(--font-body);
+  font-family: var(--lato_font);
   line-height: var(--line-height);
+  text-rendering: optimizeSpeed;
+  color: var(--c_letter);
 }
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-body {
-  text-rendering: optimizeSpeed;
-  font-family: "segoe_ui", sans-serif;
-  .carousel-indicators [data-bs-target] {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    margin-right: 3px;
-    background-color: #fff;
-    margin-bottom: -13px !important;
-    box-sizing: border-box;
-  }
-
-  .carousel-indicators .active {
-    background-color: var(--theme_main);
-  }
-}
-body.hidden {
-  overflow: hidden;
-}
 // custom_button
 button,
 input,
@@ -143,15 +118,15 @@ ul {
 }
 // css Scroll-bar
 html ::-webkit-scrollbar {
-    border-radius: 0px;
-    width: 8px;
+  border-radius: 0px;
+  width: 8px;
 }
 
 html ::-webkit-scrollbar-thumb {
-    border-radius: 4px;
-    background-color: rgba(22, 24, 35, 0.06);
+  border-radius: 4px;
+  background-color: rgba(22, 24, 35, 0.06);
 }
 
 html ::-webkit-scrollbar-track {
-    border-radius: 0px;
+  border-radius: 0px;
 }

@@ -43,7 +43,7 @@ function DetailConversation() {
   const [messagesBySession, setMessagesBySession] = useState({});
   const [totalConversations, setTotalConversations] = useState(0);
   const [page, setPage] = useState(1);
-  const [limit] = useState(50);
+  const [limit] = useState(1999);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [year, setYear] = useState("");
@@ -125,6 +125,7 @@ function DetailConversation() {
       }
 
       const { messages: fetchedMessages, total } = historyResponse.data;
+      console.log("API Response:", { fetchedMessages, total }); // Debug API response
       const organizedMessages = {};
       fetchedMessages.forEach((msg) => {
         const sessionId = msg.sessionId;
@@ -147,14 +148,16 @@ function DetailConversation() {
       }
 
       setMessagesBySession(organizedMessages);
-      setTotalConversations(total);
+      const actualConversationCount = Object.keys(organizedMessages).length;
+      console.log("Actual Conversations:", actualConversationCount); // Debug số lượng hội thoại
+      setTotalConversations(actualConversationCount); // Sử dụng số lượng thực tế
     } catch (err) {
       console.error("Lỗi khi lấy lịch sử:", err);
       setError(err.response?.data?.message || "Lỗi server.");
-      setMessagesBySession({}); // Đặt lại messagesBySession để hiển thị "Không có hội thoại"
+      setMessagesBySession({});
       setTotalConversations(0);
     } finally {
-      setFetching(false); // Luôn đặt fetching về false để mở khóa các nút
+      setFetching(false);
     }
   };
 
@@ -349,7 +352,7 @@ function DetailConversation() {
                 bgcolor: "#0F172A",
                 "&:hover": { bgcolor: "#1e293b" },
               }}
-              disabled={fetching || !searchInput.trim()} // 👈 thêm điều kiện này
+              disabled={fetching || !searchInput.trim()}
             >
               Tìm kiếm
             </Button>

@@ -10,6 +10,7 @@ const routes = {
   managePage: "/manage_page",
   DetailConversation: "/detail_conversation",
   SettingPage: "/settings",
+  profile: "/profile",
 };
 
 export default routes;

@@ -1,260 +1,391 @@
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
-  Button,
-  Grid,
-  MenuItem,
-  Select,
-  TextField,
   Typography,
-  Divider,
+  TextField,
+  Button,
+  Switch,
+  IconButton,
+  Grid,
+  CircularProgress,
   FormControl,
   InputLabel,
+  Select,
+  MenuItem,
   Alert,
   Snackbar,
-  IconButton,
-  Avatar,
+  Tooltip,
 } from "@mui/material";
-import { Add } from "@mui/icons-material";
-import React, { useEffect, useRef, useState } from "react";
+import {
+  Add,
+  Save,
+  AccountCircle,
+  Title,
+  PowerSettingsNew,
+  History,
+  Link,
+  Palette,
+  FormatColorText,
+  Code,
+  Chat,
+  Webhook,
+  Cloud,
+  ContactMail,
+  Place,
+  Image,
+  Edit,
+} from "@mui/icons-material";
 import classNames from "classnames/bind";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
+import styles from "../ManagePage/ManagePage.module.scss";
 import axios from "axios";
-import styles from "./SettingPage.module.scss";
+import { useNavigate } from "react-router-dom";
+import Avatar from "~/Components/Avatar/Avatar";
+import useDebounce from "~/hooks/useDebounce";
 
 const cx = classNames.bind(styles);
-
 const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
 
 const inputStyle = {
-  "& .MuiInputBase-root": {
-    backgroundColor: "#f7f8fa",
-    fontSize: 13,
-  },
-  "& .MuiInputBase-input": {
-    fontSize: 13,
-    color: "#1e1e1e",
-  },
-  "& .MuiInputLabel-root": {
-    fontSize: 13,
-  },
-  "& .MuiOutlinedInput-root": {
-    "& fieldset": { borderColor: "#e0e0e0" },
-    "&:hover fieldset": { borderColor: "#0F172A" },
-    "&.Mui-focused fieldset": { borderColor: "#0F172A" },
-  },
-  "& .MuiFormHelperText-root": {
-    fontSize: 12,
-    marginTop: "4px",
-    backgroundColor: "transparent",
-  },
+  backgroundColor: "#f7f8fa",
+  color: "#1e1e1e",
+  fontSize: 13,
 };
 
-function SettingPage() {
-  const wrapperRef = useRef();
-  const headerRef = useRef(null);
-  // fileInputRef and associated input type="file" are removed
-  const [openChangePassword, setOpenChangePassword] = useState(false);
-  const [form, setForm] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-  const [adminInfo, setAdminInfo] = useState({
-    name: "",
-    phoneNumber: "", // Thêm phoneNumber
-    avatar: "",
-  });
-  const [previewAvatar, setPreviewAvatar] = useState(""); // Preview ảnh local
-  const [errors, setErrors] = useState({});
-  const [avatarError, setAvatarError] = useState("");
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-  const [loading, setLoading] = useState(true);
-  // uploading state is removed as local file uploads are no longer supported
-  const [imageLoaded, setImageLoaded] = useState(false);
+// Mảng cấu hình cho các vị trí của tiện ích
+const positionOptions = [
+  { name: "Trên cùng bên trái", value: "top-left", activeIndex: 0 },
+  { name: "Trên cùng bên phải", value: "top-right", activeIndex: 2 },
+  { name: "Dưới cùng bên trái", value: "bottom-left", activeIndex: 9 },
+  { name: "Dưới cùng bên phải", value: "bottom-right", activeIndex: 11 },
+];
 
-  // Kiểm tra URL ảnh hợp lệ
+function SettingPage() {
+  const [form, setForm] = useState({
+    webhookUrl: "",
+    serverUrl: "",
+    historyEnabled: "true",
+    themeColor: "#0abfbc",
+    textColor: "#ffffff",
+    title: "",
+    avatar: "",
+    welcomeMessage: "",
+    position: "bottom-right",
+    linkContact: "",
+  });
+  const [stats, setStats] = useState({
+    total: 0,
+    today: 0,
+    month: 0,
+    visitorsToday: 0,
+    visitorsLast7Days: 0,
+    pageViewsToday: 0,
+    pageViewsLast7Days: 0,
+    conversationsAnswered: 0,
+    conversationsMissed: 0,
+  });
+  const [isHovered, setIsHovered] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const [colorError, setColorError] = useState("");
+  const [textColorError, setTextColorError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
+  const [loadingWebsite, setLoadingWebsite] = useState(false);
+  const [error, setError] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [websites, setWebsites] = useState([]);
+  const [selectedWebsite, setSelectedWebsite] = useState("");
+  const [currentDomain, setCurrentDomain] = useState("");
+  const [id_config, setIdConfig] = useState("");
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarError, setAvatarError] = useState("");
+  const navigate = useNavigate();
+  const wrapperRef = useRef();
+  const headerRef = useRef();
+  const fileInputRef = useRef();
+
+  const debouncedThemeColor = useDebounce({
+    value: form.themeColor,
+    delay: 500,
+  });
+  const debouncedTextColor = useDebounce({ value: form.textColor, delay: 500 });
+
   const isValidImageUrl = (url) => {
-    if (!url) return true; // Allow empty URL
-    const imageExtensions = /\.(jpeg|jpg|png|gif|webp)/i;
+    if (!url) return false;
+    const imageExtensions = /\.(jpeg|jpg|png|gif|webp)$/i;
     try {
-      new URL(url);
-      return imageExtensions.test(url);
+      const cleanUrl = new URL(url).pathname;
+      return imageExtensions.test(cleanUrl);
     } catch {
       return false;
     }
   };
 
-  const fetchAdminInfo = async () => {
+  const fetchConfigAndStats = async () => {
     try {
-      setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/get-admin-info`, {
+      setFetchLoading(true);
+      const websiteResponse = await axios.get(`${API_BASE_URL}/get-websites`, {
         withCredentials: true,
       });
-      if (response.data.success) {
-        setAdminInfo({
-          name: response.data.admin.name,
-          phoneNumber: response.data.admin.phoneNumber, // Thêm phoneNumber
-          avatar: response.data.admin.avatar || "",
-        });
-        setPreviewAvatar(response.data.admin.avatar || "");
+      if (websiteResponse.data.success && websiteResponse.data.websites) {
+        setWebsites(websiteResponse.data.websites);
       } else {
-        setSnackbar({
-          open: true,
-          message: response.data.message || "Không thể lấy thông tin admin.",
-          severity: "error",
+        setError("Không tìm thấy danh sách website.");
+        navigate("/");
+        return;
+      }
+
+      const configResponse = await axios.get(
+        `${API_BASE_URL}/get-selected-config`,
+        { withCredentials: true }
+      );
+      if (configResponse.data.success && configResponse.data.config_id) {
+        setIdConfig(configResponse.data.config_id);
+        const selectedSite = websiteResponse.data.websites.find(
+          (w) => w.config_id === configResponse.data.config_id
+        );
+        if (selectedSite) {
+          setSelectedWebsite(selectedSite.domain);
+          setCurrentDomain(selectedSite.domain);
+        }
+      } else {
+        setError("Không tìm thấy config_id. Vui lòng chọn website.");
+        navigate("/");
+        return;
+      }
+
+      const configDataResponse = await axios.get(
+        `${API_BASE_URL}/get-config-by-id?id_config=${configResponse.data.config_id}`,
+        { withCredentials: true }
+      );
+      if (configDataResponse.data) {
+        const config = configDataResponse.data;
+        setForm({
+          ...form,
+          ...config,
+          historyEnabled: config.historyEnabled ? "true" : "false",
         });
+      } else {
+        setError("Không thể tải cấu hình từ server.");
+      }
+
+      const statsResponse = await axios.get(
+        `${API_BASE_URL}/get-stats?domain=${encodeURIComponent(
+          websiteResponse.data.websites.find(
+            (w) => w.config_id === configResponse.data.config_id
+          ).domain
+        )}`,
+        { withCredentials: true }
+      );
+      if (statsResponse.data.success) {
+        setStats(statsResponse.data.stats);
+      } else {
+        setError("Không thể lấy thống kê cho domain này.");
       }
     } catch (err) {
-      setSnackbar({
-        open: true,
-        message: err.response?.data?.message || "Không thể kết nối đến server.",
-        severity: "error",
-      });
+      console.error("Fetch config/stats error:", err);
+      setError(err.response?.data?.message || "Không thể kết nối đến server.");
+      navigate("/");
     } finally {
-      setLoading(false);
+      setFetchLoading(false);
+      setLoadingWebsite(false);
     }
   };
 
   useEffect(() => {
-    fetchAdminInfo();
-  }, []);
+    fetchConfigAndStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate]);
 
-  const handleOpenChangePassword = () => setOpenChangePassword(true);
-  const handleCloseChangePassword = () => {
-    setOpenChangePassword(false);
-    setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-    setErrors({});
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (!form.currentPassword) {
-      newErrors.currentPassword = "Vui lòng nhập mật khẩu hiện tại.";
+  useEffect(() => {
+    if (/^#[0-9A-Fa-f]{6}$/.test(debouncedThemeColor)) {
+      setForm((prev) => ({ ...prev, themeColor: debouncedThemeColor }));
+      setColorError("");
+    } else if (debouncedThemeColor) {
+      setColorError("Mã màu phải có định dạng #RRGGBB (ví dụ: #ffffff)");
     }
-    if (!form.newPassword) {
-      newErrors.newPassword = "Vui lòng nhập mật khẩu mới.";
-    } else if (form.newPassword.length < 8) {
-      newErrors.newPassword = "Mật khẩu mới phải có ít nhất 8 ký tự.";
+  }, [debouncedThemeColor]);
+
+  useEffect(() => {
+    if (/^#[0-9A-Fa-f]{6}$/.test(debouncedTextColor)) {
+      setForm((prev) => ({ ...prev, textColor: debouncedTextColor }));
+      setTextColorError("");
+    } else if (debouncedTextColor) {
+      setTextColorError("Mã màu phải có định dạng #RRGGBB (ví dụ: #ffffff)");
     }
-    if (!form.confirmPassword) {
-      newErrors.confirmPassword = "Vui lòng nhập lại mật khẩu mới.";
-    } else if (form.newPassword !== form.confirmPassword) {
-      newErrors.confirmPassword = "Mật khẩu mới không khớp.";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  }, [debouncedTextColor]);
 
-  const handleChangePassword = async () => {
-    if (!validateForm()) return;
-
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/change-password`,
-        {
-          currentPassword: form.currentPassword,
-          newPassword: form.newPassword,
-          confirmPassword: form.confirmPassword,
-        },
-        { withCredentials: true }
-      );
-
-      if (response.data.success) {
-        setSnackbar({
-          open: true,
-          message: response.data.message,
-          severity: "success",
+  const handleWebsiteChange = (event) => {
+    const newDomain = event.target.value;
+    const selectedSite = websites.find((w) => w.domain === newDomain);
+    if (selectedSite) {
+      setLoadingWebsite(true);
+      axios
+        .post(
+          `${API_BASE_URL}/select-website`,
+          { config_id: selectedSite.config_id },
+          { withCredentials: true }
+        )
+        .then((response) => {
+          if (response.data.success) {
+            setSelectedWebsite(newDomain);
+            setIdConfig(selectedSite.config_id);
+            setCurrentDomain(newDomain);
+            fetchConfigAndStats();
+          } else {
+            setError(response.data.message);
+          }
+        })
+        .catch((err) => {
+          setError(
+            err.response?.data?.message || "Không thể kết nối đến server."
+          );
         });
-        handleCloseChangePassword();
-      } else {
-        setSnackbar({
-          open: true,
-          message: response.data.message,
-          severity: "error",
-        });
-      }
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: err.response?.data?.message || "Lỗi server.",
-        severity: "error",
-      });
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === "name") {
-      setAdminInfo({ ...adminInfo, name: value });
-      setErrors({ ...errors, name: "" });
-    } else if (name === "avatar") {
-      setAdminInfo({ ...adminInfo, avatar: value });
-      setPreviewAvatar(value); // Cập nhật preview
+    setForm({ ...form, [name]: value });
+    if (name === "avatar") {
+      setAvatarFile(null);
       setAvatarError("");
       if (value && !isValidImageUrl(value)) {
         setAvatarError(
           "URL không phải là link ảnh hợp lệ (jpg, png, gif, webp)."
         );
       }
-    } else {
-      setForm({ ...form, [name]: value });
-      setErrors({ ...errors, [name]: "" });
     }
   };
 
-  const handleSaveAdminInfo = async () => {
-    const newErrors = {};
-    if (!adminInfo.name || adminInfo.name.trim().length < 2) {
-      newErrors.name = "Tên phải có ít nhất 2 ký tự.";
-    }
-    if (adminInfo.avatar && !isValidImageUrl(adminInfo.avatar)) {
-      newErrors.avatar = "URL ảnh không hợp lệ.";
-    }
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return;
+  const handlePositionChange = (value) => {
+    setForm({ ...form, position: value });
+  };
+
+  const handleHistoryToggle = () => {
+    setForm({
+      ...form,
+      historyEnabled: form.historyEnabled === "true" ? "false" : "true",
+    });
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setAvatarFile(file);
+    setAvatarError("");
+    const formData = new FormData();
+    formData.append("avatar", file);
 
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/update-admin-info`,
-        { name: adminInfo.name, avatar: adminInfo.avatar },
-        { withCredentials: true }
+        `${API_BASE_URL}/upload-avatar`,
+        formData,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
       );
 
       if (response.data.success) {
-        setSnackbar({
-          open: true,
-          message: "Cập nhật thông tin thành công.",
-          severity: "success",
-        });
-        await fetchAdminInfo(); // Đồng bộ sau khi lưu
+        setForm({ ...form, avatar: response.data.url });
+        setError("");
       } else {
-        setSnackbar({
-          open: true,
-          message: response.data.message,
-          severity: "error",
-        });
+        setError(response.data.message);
       }
     } catch (err) {
-      setSnackbar({
-        open: true,
-        message: err.response?.data?.message || "Lỗi server.",
-        severity: "error",
-      });
+      setError(err.response?.data?.message || "Lỗi khi upload ảnh.");
     }
   };
 
-  // handleAvatarChange function is removed since local file uploads are no longer supported
+  const handleCopy = () => {
+    const code = `<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v3@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`;
+    navigator.clipboard
+      .writeText(code)
+      .then(() => {
+        setCopySuccess(true);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      })
+      .catch(() => {
+        setError("Không thể sao chép mã.");
+      });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSaveSuccess(false);
+
+    if (colorError || textColorError) {
+      setError("Vui lòng nhập mã màu hợp lệ trước khi lưu.");
+      return;
+    }
+
+    if (avatarError) {
+      setError("Vui lòng nhập URL ảnh hợp lệ hoặc chọn file ảnh.");
+      return;
+    }
+
+    if (!id_config) {
+      setError("Không tìm thấy config_id. Vui lòng chọn website.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("id_config", id_config);
+      formData.append("themeColor", form.themeColor);
+      formData.append("textColor", form.textColor);
+      formData.append("title", form.title);
+      formData.append("welcomeMessage", form.welcomeMessage);
+      formData.append("position", form.position);
+      formData.append("historyEnabled", form.historyEnabled);
+      formData.append("serverUrl", form.serverUrl);
+      formData.append("webhookUrl", form.webhookUrl);
+      formData.append("linkContact", form.linkContact);
+      if (avatarFile) {
+        formData.append("avatar", avatarFile);
+      } else {
+        formData.append("avatar", form.avatar);
+      }
+
+      const response = await axios.post(
+        `${API_BASE_URL}/save-config`,
+        formData,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      if (response.data.success) {
+        setSaveSuccess(true);
+        setForm({
+          ...form,
+          ...response.data.config,
+          historyEnabled: response.data.config?.historyEnabled
+            ? "true"
+            : "false",
+        });
+        setAvatarFile(null);
+      } else {
+        setError(response.data.message);
+      }
+    } catch (err) {
+      console.error("Save config error:", err);
+      setError(err.response?.data?.message || "Không thể kết nối đến server.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setCopySuccess(false);
+    setSaveSuccess(false);
+  };
 
   useEffect(() => {
     const resizeHeader = () => {
@@ -265,7 +396,6 @@ function SettingPage() {
         header.style.left = `${wrapper.getBoundingClientRect().left}px`;
       }
     };
-
     resizeHeader();
     window.addEventListener("resize", resizeHeader);
     return () => window.removeEventListener("resize", resizeHeader);
@@ -273,299 +403,577 @@ function SettingPage() {
 
   return (
     <div className={cx("wrapper")} ref={wrapperRef}>
-      <Box
-        className={cx("title_header")}
-        ref={headerRef}
-        sx={{
-          bgcolor: "#fff",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-          borderRadius: "8px",
-          mb: 2,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          p: 2,
-        }}
-      >
-        <Typography sx={{ fontSize: 18, fontWeight: 600 }}>Cài đặt</Typography>
-        <Button
-          variant="contained"
-          onClick={handleSaveAdminInfo}
-          sx={{
-            bgcolor: "#0F172A",
-            color: "#fff",
-            fontSize: 13,
-            textTransform: "none",
-            px: 3,
-            py: 1,
-            "&:hover": { bgcolor: "#1e293b" },
-            borderRadius: "8px",
-          }}
-          disabled={!!avatarError} // Removed 'uploading' from disabled prop
-        >
-          Lưu
-        </Button>
+      <Box className={cx("title_header")} ref={headerRef}>
+        <Box>
+          <div style={{ fontSize: "16px" }}>Cài đặt</div>
+        </Box>
+        <Box display="flex" gap={2}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<Add />}
+            onClick={() => navigate("/add_website")}
+            sx={{
+              fontSize: "14px",
+              textTransform: "none",
+              borderColor: "#0F172A",
+              height: 40,
+              px: 2,
+              color: "var(--letter_color)",
+              "&:hover": {
+                borderColor: "#1e293b",
+                backgroundColor: "#f8f9fa",
+              },
+            }}
+          >
+            Thêm Website
+          </Button>
+          <FormControl variant="outlined" size="small" sx={{ minWidth: 200 }}>
+            <InputLabel sx={{ fontSize: "14px" }}>Website</InputLabel>
+            <Select
+              value={selectedWebsite}
+              onChange={handleWebsiteChange}
+              label="Website"
+              sx={{
+                fontSize: "14px",
+                "& .MuiSelect-select": { py: 1.5 },
+                whiteSpace: " nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "block",
+                maxWidth: "100%",
+              }}
+              disabled={loadingWebsite}
+            >
+              {websites.map((w) => (
+                <MenuItem
+                  key={w.domain}
+                  value={w.domain}
+                  sx={{ fontSize: "14px" }}
+                >
+                  {w.domain}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {loading ? (
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <CircularProgress
+                size={25}
+                sx={{ color: "var(--c_black)", mr: 3 }}
+              />
+            </Box>
+          ) : (
+            <Button
+              type="submit"
+              variant="contained"
+              startIcon={<Save />}
+              disabled={
+                fetchLoading ||
+                !!colorError ||
+                !!textColorError ||
+                !!avatarError
+              }
+              onClick={handleSubmit}
+              sx={{
+                fontSize: "14px",
+                bgcolor: "#0F172A",
+                "&:hover": { bgcolor: "#1e293b" },
+                py: 1,
+                px: 2,
+                height: 40,
+                textTransform: "none",
+              }}
+            >
+              Lưu cấu hình
+            </Button>
+          )}
+        </Box>
       </Box>
 
-      <Box p={{ xs: 2, md: 4 }} mt={1}>
-        <Typography sx={{ fontSize: 16, fontWeight: "bold", mb: 3 }}>
-          Thông tin cơ bản
-        </Typography>
-        <Grid container>
-          <Grid item xs={12} width={"100%"}>
+      <Box p={4} mt={7}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2, fontSize: "14px" }}>
+            {error}
+          </Alert>
+        )}
+        {fetchLoading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "60vh",
+            }}
+          >
+            <CircularProgress sx={{}} />
+          </Box>
+        ) : (
+          <>
             <Box
               sx={{
-                alignItems: "center",
-                gap: 3,
-                flexWrap: "wrap",
-                mb: 3,
-                width: "100%",
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "space-between",
               }}
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  width: "100%",
-                  justifyContent: "end",
-                }}
-              >
+              <Box sx={{ width: "49%" }} spacing={2}>
+                <Box>
+                  <Box display="flex" alignItems="center" gap={2} mb={2}>
+                    <Box position="relative">
+                      <Box
+                        sx={{
+                          width: 80,
+                          height: 80,
+                          bgcolor: form.avatar ? "transparent" : "#00e0dc",
+                          borderRadius: 1,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 30,
+                          color: "white",
+                          fontWeight: "bold",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <Avatar
+                          src={
+                            form.avatar
+                              ? form.avatar.startsWith("/uploads")
+                                ? `${API_BASE_URL}${form.avatar}`
+                                : form.avatar
+                              : "https://img.icons8.com/ios-filled/50/ffffff/artificial-intelligence.png"
+                          }
+                          alt="Avatar"
+                          className="avatar_preview"
+                          onError={(e) =>
+                            (e.target.src = "/fallback-avatar.jpg")
+                          }
+                        />
+                      </Box>
+                    </Box>
+                    <Box>
+                      <Typography fontSize={13} color="text.secondary">
+                        Chúng tôi đề xuất ảnh có kích thước tối thiểu 512 × 512
+                        cho trang.
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Box sx={{ lineHeight: 1.5, mb: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                      <Image sx={{ mr: 1 }} />
+                      <Typography fontSize={13} fontWeight="bold">
+                        URL ảnh hoặc tải lên
+                      </Typography>
+                    </Box>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      name="avatar"
+                      value={form.avatar}
+                      onChange={handleChange}
+                      error={!!avatarError}
+                      helperText={avatarError}
+                      sx={{ "& .MuiInputBase-input": inputStyle }}
+                    />
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                      <Edit sx={{ mr: 1, fontSize: 16 }} />
+                      <Typography fontSize={13} fontWeight="bold">
+                        Tên trang
+                      </Typography>
+                    </Box>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      name="title"
+                      value={form.title}
+                      onChange={handleChange}
+                      sx={{ "& .MuiInputBase-input": inputStyle }}
+                    />
+                  </Box>
+
+                  {/* <Box sx={{ mb: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                      <PowerSettingsNew sx={{ mr: 1, fontSize: 16 }} />
+                      <Typography fontSize={13} fontWeight="bold">
+                        Tình trạng
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        background: "#F7F7F9",
+                        borderRadius: "8px",
+                        padding: "0 10px 0 15px",
+                        gap: 2,
+                      }}
+                    >
+                      <Typography fontSize={13}>Hoạt động</Typography>
+                      <Switch checked={true} fontSize={16} />
+                    </Box>
+                  </Box> */}
+
+                  <Box sx={{ mb: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                      <History sx={{ mr: 1, fontSize: 16 }} />
+                      <Typography fontSize={13} fontWeight="bold">
+                        Lưu lịch sử
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        background: "#F7F7F9",
+                        borderRadius: "8px",
+                        padding: "0 10px 0 15px",
+                        gap: 2,
+                      }}
+                    >
+                      <Typography fontSize={13}>Lịch sử</Typography>
+                      <Switch
+                        checked={form.historyEnabled === "true"}
+                        onChange={handleHistoryToggle}
+                      />
+                    </Box>
+                  </Box>
+                </Box>
+
+                <Box sx={{ mb: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <Link sx={{ mr: 1, fontSize: 16 }} />
+                    <Typography fontSize={13} fontWeight="bold">
+                      URL trang
+                    </Typography>
+                  </Box>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    value={currentDomain}
+                    disabled
+                    sx={{ "& .MuiInputBase-input": inputStyle }}
+                  />
+                </Box>
+                <Box sx={{ mb: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <Palette sx={{ mr: 1,fontSize: 16  }} />
+                    <Typography fontSize={13} fontWeight="bold">
+                      Màu cơ bản
+                    </Typography>
+                  </Box>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    {["#0066FF", "#D42B00", "#7B5FFF", "#03A84E"].map(
+                      (color) => (
+                        <IconButton
+                          key={color}
+                          onClick={() =>
+                            setForm({ ...form, themeColor: color })
+                          }
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            bgcolor: color,
+                            border:
+                              form.themeColor === color
+                                ? "2px solid #00897b"
+                                : "1px solid transparent",
+                            borderRadius: "6px"
+                            
+                          }}
+                        />
+                      )
+                    )}
+                    <Box
+                      component="input"
+                      type="color"
+                      value={form.themeColor}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          themeColor: e.target.value,
+                        })
+                      }
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        border: "1px solid #cccccc",
+                        cursor: "pointer",
+                      }}
+                    />
+                    <TextField
+                      name="themeColor"
+                      value={form.themeColor}
+                      onChange={(e) =>
+                        setForm({ ...form, themeColor: e.target.value })
+                      }
+                      error={!!colorError}
+                      helperText={colorError}
+                      FormHelperTextProps={{
+                        sx: {
+                          color: "#D32F2F",
+                          fontSize: "12px",
+                          fontStyle: "italic",
+                          width: "324px",
+                          position: "absolute !important",
+                          top: "30px",
+                          right: "-42px",
+                        },
+                      }}
+                      sx={{
+                        width: 100,
+                        "& input": { fontSize: 14, px: 1, py: 0.5 },
+                      }}
+                    />
+                  </Box>
+                </Box>
+                <Box>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <FormatColorText sx={{ mr: 1, fontSize: 16 }} />
+                    <Typography fontSize={13} fontWeight="bold">
+                      Màu chữ
+                    </Typography>
+                  </Box>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    {["#ffffff", "#1e1e1e", "#cccccc"].map((color) => (
+                      <IconButton
+                        key={color}
+                        onClick={() => setForm({ ...form, textColor: color })}
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          bgcolor: color,
+                          border:
+                            form.textColor === color
+                              ? "2px solid #00897b"
+                              : "1px solid transparent",
+                          borderRadius: "6px"
+                        }}
+                      />
+                    ))}
+                    <Box
+                      component="input"
+                      type="color"
+                      value={form.textColor}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          textColor: e.target.value,
+                        })
+                      }
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        border: "1px solid #cccccc",
+                        cursor: "pointer",
+                      }}
+                    />
+                    <TextField
+                      name="textColor"
+                      value={form.textColor}
+                      onChange={(e) =>
+                        setForm({ ...form, textColor: e.target.value })
+                      }
+                      size="small"
+                      FormHelperTextProps={{
+                        sx: {
+                          color: "#D32F2F",
+                          fontSize: "12px",
+                          fontStyle: "italic",
+                          width: "324px",
+                          position: "absolute !important",
+                          top: "30px",
+                          right: "-80px",
+                        },
+                      }}
+                      sx={{
+                        width: 100,
+                        "& input": { fontSize: 14, px: 1, py: 0.5 },
+                      }}
+                      error={!!textColorError}
+                      helperText={textColorError}
+                      inputProps={{ maxLength: 7 }}
+                    />
+                  </Box>
+                </Box>
+              </Box>
+
+              <Box sx={{ width: "49%" }}>
                 <Box
                   sx={{
-                    fontSize: 14,
-                    color: "#909298",
-                    fontWeight: "bold",
-                    mr: 1,
+                    position: "relative",
+                    "&:hover": { "& .copy-text": { opacity: 1 } },
                   }}
+                  onClick={handleCopy}
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
                 >
-                  {adminInfo.name}
-                </Box>
-                <Avatar
-                  src={previewAvatar}
-                  alt={adminInfo.name}
-                  sx={{ width: 48, height: 48, fontSize: 40 }}
-                  imgProps={{
-                    onLoad: () => setImageLoaded(true),
-                    onError: () => setImageLoaded(false),
-                  }}
-                >
-                  {!previewAvatar || !imageLoaded
-                    ? adminInfo.name?.charAt(0)?.toUpperCase()
-                    : null}
-                </Avatar>
-              </Box>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  gap: 4,
-                  flexWrap: "wrap",
-                  width: "100%",
-                  mt: 2,
-                  mb: 2,
-                }}
-              >
-                <Box sx={{ width: "48%" }}>
-                  <Typography fontSize={16} fontWeight="bold" mb={1}>
-                    Tên
-                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <Code sx={{ mr: 1, fontSize: 16 }} />
+                    <Typography fontSize={13} fontWeight="bold">
+                      Mã Nhúng
+                    </Typography>
+                  </Box>
                   <TextField
                     fullWidth
-                    required
-                    name="name"
-                    value={adminInfo.name}
-                    onChange={handleInputChange}
-                    sx={{ ...inputStyle }}
-                    error={!!errors.name}
-                    helperText={errors.name}
+                    multiline
+                    rows={8}
+                    value={`<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v3@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`}
+                    InputProps={{
+                      style: { fontFamily: "monospace", fontSize: 14 },
+                      readOnly: true,
+                    }}
+                    sx={{
+                      mb: 3,
+                      background: isCopied
+                        ? "aqua"
+                        : isHovered
+                        ? "aqua"
+                        : "transparent",
+                      transition: "opacity 0.2s",
+                      pointerEvents: "none",
+                    }}
                   />
-                </Box>
-
-                <Box sx={{ width: "48%" }}>
-                  <Typography fontSize={16} fontWeight="bold" mb={1}>
-                    Số điện thoại
+                  <Typography
+                    className="copy-text"
+                    sx={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      fontSize: 14,
+                      fontWeight: "bold",
+                      opacity: isCopied ? 1 : isHovered ? 1 : 0,
+                      transition: "opacity 0.2s",
+                      pointerEvents: "none",
+                      backgroundColor: "rgba(255, 255, 255)",
+                      padding: "6px 8px",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    {isCopied ? "Đã sao chép!" : "Sao chép vào khay nhớ tạm"}
                   </Typography>
+                </Box>
+                <Box sx={{ mb: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <Chat sx={{ mr: 1, fontSize: 16 }} />
+                    <Typography fontSize={13} fontWeight="bold">
+                      Lời chào mừng
+                    </Typography>
+                  </Box>
                   <TextField
                     fullWidth
-                    required
-                    value={adminInfo.phoneNumber}
-                    InputProps={{ readOnly: true }}
-                    sx={{ ...inputStyle }}
+                    size="small"
+                    name="welcomeMessage"
+                    value={form.welcomeMessage}
+                    onChange={handleChange}
+                    sx={{ "& .MuiInputBase-input": inputStyle }}
                   />
                 </Box>
-              </Box>
-
-              <Box sx={{ flex: 1, width: "48%" }}>
-                <Typography fontSize={16} fontWeight="bold" mb={1}>
-                  URL ảnh
-                </Typography>
-                <TextField
-                  fullWidth
-                  name="avatar"
-                  value={adminInfo.avatar}
-                  onChange={handleInputChange}
-                  error={!!avatarError}
-                  helperText={avatarError}
-                  sx={{ ...inputStyle }}
-                />
+                <Box sx={{ mb: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <Webhook sx={{ mr: 1, fontSize: 16 }} />
+                    <Typography fontSize={13} fontWeight="bold">
+                      Webhook URL
+                    </Typography>
+                  </Box>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    name="webhookUrl"
+                    value={form.webhookUrl}
+                    onChange={handleChange}
+                    sx={{ "& .MuiInputBase-input": inputStyle }}
+                  />
+                </Box>
+                <Box sx={{ mb: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <Cloud sx={{ mr: 1, fontSize: 16 }} />
+                    <Typography fontSize={13} fontWeight="bold">
+                      Server URL
+                    </Typography>
+                  </Box>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    name="serverUrl"
+                    value={form.serverUrl}
+                    onChange={handleChange}
+                    sx={{ "& .MuiInputBase-input": inputStyle }}
+                  />
+                </Box>
+                <Box sx={{ mb: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <ContactMail sx={{ mr: 1, fontSize: 16 }} />
+                    <Typography fontSize={13} fontWeight="bold">
+                      Link liên hệ
+                    </Typography>
+                  </Box>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    name="linkContact"
+                    value={form.linkContact}
+                    onChange={handleChange}
+                    sx={{ "& .MuiInputBase-input": inputStyle }}
+                  />
+                </Box>
+                <Box sx={{ mb: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <Place sx={{ mr: 1, fontSize: 16 }} />
+                    <Typography fontSize={13} fontWeight="bold">
+                      Vị trí tiện ích
+                    </Typography>
+                  </Box>
+                  <Grid container spacing={1} sx={{ maxWidth: "100%", ml: 1 }}>
+                    {positionOptions.map((option) => (
+                      <Grid item xs={6} key={option.value}>
+                        <Tooltip title={option.name} placement="top">
+                          <Box
+                            className={cx("position_wrapper", {
+                              position_wrapper_active:
+                                form.position === option.value,
+                            })}
+                            onClick={() => handlePositionChange(option.value)}
+                          >
+                            {[...Array(12)].map((_, index) => (
+                              <div
+                                key={index}
+                                className={cx("position", {
+                                  position_active: index === option.activeIndex,
+                                })}
+                              ></div>
+                            ))}
+                          </Box>
+                        </Tooltip>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
               </Box>
             </Box>
-          </Grid>
-        </Grid>
-
-        <Divider sx={{ my: 4, borderColor: "#e0e0e0" }} />
-
-        <Typography sx={{ fontSize: 16, fontWeight: "bold", mb: 3 }}>
-          Bảo mật
-        </Typography>
-        <Box mb={3}>
-          <Typography sx={{ fontSize: 16, fontWeight: 600, mb: 1 }}>
-            Mật khẩu
-          </Typography>
-          <Button
-            variant="text"
-            onClick={handleOpenChangePassword}
-            sx={{
-              color: "var(--c_red_light)",
-              fontSize: 13,
-              textTransform: "none",
-              p: 0,
-              "&:hover": { textDecoration: "underline" },
-            }}
-          >
-            Đổi mật khẩu
-          </Button>
-        </Box>
-
-        <Dialog
-          open={openChangePassword}
-          onClose={handleCloseChangePassword}
-          PaperProps={{
-            sx: {
-              borderRadius: "12px",
-              p: 1,
-              minWidth: { xs: "90%", sm: 400 },
-            },
-          }}
-        >
-          <DialogTitle sx={{ fontSize: 16, fontWeight: 600 }}>
-            Đổi mật khẩu
-          </DialogTitle>
-          <DialogContent sx={{ pt: 1 }}>
-            <Typography sx={{ fontSize: 13, mb: 1 }}>
-              Mật khẩu hiện tại
-            </Typography>
-            <TextField
-              fullWidth
-              type="password"
-              required
-              name="currentPassword"
-              value={form.currentPassword}
-              onChange={handleInputChange}
-              placeholder="Nhập mật khẩu hiện tại"
-              sx={{ ...inputStyle, mb: 2 }}
-              error={!!errors.currentPassword}
-              helperText={errors.currentPassword}
-            />
-            <Typography sx={{ fontSize: 13, mb: 1 }}>Mật khẩu mới</Typography>
-            <TextField
-              fullWidth
-              type="password"
-              required
-              name="newPassword"
-              value={form.newPassword}
-              onChange={handleInputChange}
-              placeholder="Nhập mật khẩu mới"
-              sx={{ ...inputStyle, mb: 2 }}
-              error={!!errors.newPassword}
-              helperText={errors.newPassword}
-            />
-            <Typography sx={{ fontSize: 13, mb: 1 }}>
-              Nhập lại mật khẩu mới
-            </Typography>
-            <TextField
-              fullWidth
-              type="password"
-              required
-              name="confirmPassword"
-              value={form.confirmPassword}
-              onChange={handleInputChange}
-              placeholder="Nhập lại mật khẩu mới"
-              sx={{ ...inputStyle, mb: 2 }}
-              error={!!errors.confirmPassword}
-              helperText={errors.confirmPassword}
-            />
-          </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button
-              onClick={handleCloseChangePassword}
-              sx={{
-                fontSize: 13,
-                color: "#1e1e1e",
-                textTransform: "none",
-                "&:hover": { bgcolor: "#f0f2f5" },
-              }}
-            >
-              Hủy
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleChangePassword}
-              sx={{
-                bgcolor: "#0F172A",
-                color: "#fff",
-                fontSize: 13,
-                textTransform: "none",
-                px: 3,
-                "&:hover": { bgcolor: "#1e293b" },
-                borderRadius: "8px",
-              }}
-            >
-              Đổi mật khẩu
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Typography sx={{ fontSize: 16, fontWeight: "bold", mb: 2 }}>
-          Giao diện
-        </Typography>
-        <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel sx={{ fontSize: 13 }}>Chủ đề</InputLabel>
-          <Select
-            defaultValue="default"
-            size="small"
-            label="Chủ đề"
-            sx={{
-              ...inputStyle,
-              "& .MuiSelect-select": { fontSize: 13, py: 1 },
-              borderRadius: "8px",
-            }}
-          >
-            <MenuItem sx={{ fontSize: 13 }} value="default">
-              Mặc định hệ thống
-            </MenuItem>
-            <MenuItem sx={{ fontSize: 13 }} value="light">
-              Sáng
-            </MenuItem>
-            <MenuItem sx={{ fontSize: 13 }} value="dark">
-              Tối
-            </MenuItem>
-          </Select>
-        </FormControl>
+          </>
+        )}
       </Box>
 
       <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
+        open={copySuccess || saveSuccess}
+        autoHideDuration={2000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <Alert
           onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%", fontSize: 13 }}
+          severity="success"
+          sx={{ width: "100%", fontSize: "12px" }}
         >
-          {snackbar.message}
+          {copySuccess ? "Đã sao chép mã cài đặt!" : "Lưu cấu hình thành công!"}
         </Alert>
       </Snackbar>
     </div>
