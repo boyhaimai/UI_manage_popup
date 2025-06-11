@@ -187,6 +187,7 @@ export default function ChatUIClone() {
           body: JSON.stringify({
             chatId: `${chatId}@${domain}`,
             message: adminMessage,
+            sender: "admin",
           }),
           credentials: "include",
         }
