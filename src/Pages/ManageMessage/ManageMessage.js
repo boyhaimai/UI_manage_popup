@@ -60,9 +60,12 @@ export default function ChatUIClone() {
   useEffect(() => {
     const fetchActiveChats = async () => {
       try {
-        const response = await fetch("https://ai.bang.vawayai.com:5000/get-active-chats", {
-          credentials: "include",
-        });
+        const response = await fetch(
+          "https://ai.bang.vawayai.com:5000/get-active-chats",
+          {
+            credentials: "include",
+          }
+        );
         const data = await response.json();
         if (data.success) {
           setActiveChats(data.activeChats);
@@ -83,12 +86,14 @@ export default function ChatUIClone() {
 
     const fetchChatHistory = async () => {
       try {
+        const [chatId, domain] = selectedChat.chatId.split("@");
         const response = await fetch(
-          `https://ai.bang.vawayai.com:5000/get-history?userId=${
-            selectedChat.chatId
-          }&domain=${encodeURIComponent(selectedChat.domain)}`,
+          `https://ai.bang.vawayai.com:5000/get-history?userId=${chatId}&domain=${encodeURIComponent(
+            domain
+          )}`,
           { credentials: "include" }
         );
+
         const data = await response.json();
         if (data.success) {
           setChatMessages(data.messages);
@@ -113,12 +118,16 @@ export default function ChatUIClone() {
   // Xử lý Join chat
   const handleJoinChat = async () => {
     try {
-      const response = await fetch("https://ai.bang.vawayai.com:5000/toggle-bot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chatId: selectedChat.chatId, enableBot: false }),
-        credentials: "include",
-      });
+      const [chatId] = selectedChat.chatId.split("@");
+      const response = await fetch(
+        "https://ai.bang.vawayai.com:5000/toggle-bot",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chatId, enableBot: false }),
+          credentials: "include",
+        }
+      );
       const data = await response.json();
       if (data.success) {
         setIsAdminChatting(true);
@@ -131,12 +140,16 @@ export default function ChatUIClone() {
   // Xử lý Close chat
   const handleCloseChat = async () => {
     try {
-      const response = await fetch("https://ai.bang.vawayai.com:5000/toggle-bot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chatId: selectedChat.chatId, enableBot: true }),
-        credentials: "include",
-      });
+      const [chatId] = selectedChat.chatId.split("@");
+      const response = await fetch(
+        "https://ai.bang.vawayai.com:5000/toggle-bot",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chatId, enableBot: true }),
+          credentials: "include",
+        }
+      );
       const data = await response.json();
       if (data.success) {
         setIsAdminChatting(false);
@@ -152,13 +165,14 @@ export default function ChatUIClone() {
     if (!adminMessage.trim()) return;
 
     try {
+      const [chatId] = selectedChat.chatId.split("@");
       const response = await fetch(
         "https://ai.bang.vawayai.com:5000/send-message-to-user",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            chatId: selectedChat.chatId,
+            chatId,
             message: adminMessage,
           }),
           credentials: "include",
@@ -336,7 +350,12 @@ export default function ChatUIClone() {
           </IconButton>
         </DialogTitle>
         <DialogContent
-          sx={{ display: "flex", flexDirection: "column", height: "500px", position: "relative" }}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            height: "500px",
+            position: "relative",
+          }}
           ref={chatContainerRef}
         >
           <Box flex={1} overflow="auto" p={2}>
@@ -357,11 +376,10 @@ export default function ChatUIClone() {
                   maxWidth="60%"
                   sx={{ fontSize: "14px" }}
                 >
-                  <Typography sx={{ fontSize: "14px" }}>{msg.message}</Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ fontSize: "10px" }}
-                  >
+                  <Typography sx={{ fontSize: "14px" }}>
+                    {msg.message}
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontSize: "10px" }}>
                     {new Date(msg.timestamp).toLocaleTimeString()}
                   </Typography>
                 </Box>
@@ -398,7 +416,7 @@ export default function ChatUIClone() {
                 onClick={handleJoinChat}
                 sx={{ fontSize: "14px" }}
               >
-               Join Chat
+                Join Chat
               </Button>
             </Box>
           ) : (
