@@ -139,25 +139,32 @@ export default function ChatUIClone() {
 
   // Xử lý Close chat
   const handleCloseChat = async () => {
-    try {
-      const [chatId] = selectedChat.chatId.split("@");
-      const response = await fetch(
-        "https://ai.bang.vawayai.com:5000/toggle-bot",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chatId, enableBot: true }),
-          credentials: "include",
+    const [chatId] = selectedChat.chatId.split("@");
+
+    // Nếu đang là admin chat => gọi toggle-bot để ngắt WebSocket phía client
+    if (isAdminChatting) {
+      try {
+        const response = await fetch(
+          "https://ai.bang.vawayai.com:5000/toggle-bot",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chatId, enableBot: true }),
+            credentials: "include",
+          }
+        );
+        const data = await response.json();
+        if (!data.success) {
+          console.warn("Không thể bật lại bot:", data.message);
         }
-      );
-      const data = await response.json();
-      if (data.success) {
-        setIsAdminChatting(false);
-        setSelectedChat(null);
+      } catch (err) {
+        console.error("Lỗi khi gửi yêu cầu bật lại bot:", err);
       }
-    } catch (err) {
-      console.error("Lỗi khi close chat:", err);
     }
+
+    // Dù thành công hay lỗi vẫn đóng giao diện
+    setIsAdminChatting(false);
+    setSelectedChat(null);
   };
 
   // Gửi tin nhắn từ admin
