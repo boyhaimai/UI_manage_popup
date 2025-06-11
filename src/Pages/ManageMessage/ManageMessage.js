@@ -118,13 +118,16 @@ export default function ChatUIClone() {
   // Xử lý Join chat
   const handleJoinChat = async () => {
     try {
-      const [chatId] = selectedChat.chatId.split("@");
+      const [chatId, domain] = selectedChat.chatId.split("@");
       const response = await fetch(
         "https://ai.bang.vawayai.com:5000/toggle-bot",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chatId, enableBot: false }),
+          body: JSON.stringify({
+            chatId: `${chatId}@${domain}`,
+            enableBot: false,
+          }),
           credentials: "include",
         }
       );
@@ -139,7 +142,7 @@ export default function ChatUIClone() {
 
   // Xử lý Close chat
   const handleCloseChat = async () => {
-    const [chatId] = selectedChat.chatId.split("@");
+    const [chatId, domain] = selectedChat.chatId.split("@");
 
     // Nếu đang là admin chat => gọi toggle-bot để ngắt WebSocket phía client
     if (isAdminChatting) {
@@ -149,7 +152,10 @@ export default function ChatUIClone() {
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ chatId, enableBot: true }),
+            body: JSON.stringify({
+              chatId: `${chatId}@${domain}`,
+              enableBot: true,
+            }),
             credentials: "include",
           }
         );
@@ -172,14 +178,14 @@ export default function ChatUIClone() {
     if (!adminMessage.trim()) return;
 
     try {
-      const [chatId] = selectedChat.chatId.split("@");
+      const [chatId, domain] = selectedChat.chatId.split("@");
       const response = await fetch(
         "https://ai.bang.vawayai.com:5000/send-message-to-user",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            chatId,
+            chatId: `${chatId}@${domain}`,
             message: adminMessage,
           }),
           credentials: "include",
