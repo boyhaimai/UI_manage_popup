@@ -11,7 +11,7 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import { UploadFile, Send } from "@mui/icons-material";
+import {  Send } from "@mui/icons-material";
 import classNames from "classnames/bind";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";

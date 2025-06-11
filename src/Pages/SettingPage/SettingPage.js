@@ -19,9 +19,6 @@ import {
 import {
   Add,
   Save,
-  AccountCircle,
-  Title,
-  PowerSettingsNew,
   History,
   Link,
   Palette,

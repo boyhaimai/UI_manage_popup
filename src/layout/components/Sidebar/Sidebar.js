@@ -10,7 +10,6 @@ import {
   Dashboard,
   ErrorRounded,
   Forum,
-  HelpRounded,
   Logout,
   Person,
   SettingsRounded,
