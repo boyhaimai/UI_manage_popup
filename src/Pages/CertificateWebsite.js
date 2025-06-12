@@ -82,7 +82,7 @@ export default function CertificateWebsite() {
 
       // Tạo mã nhúng cần tìm
       const scriptPattern = new RegExp(
-        `<script src="https://cdn.jsdelivr.net/gh/boyhaimai/popup_-model_admin_just_chat_v6@main/dist/model_admin_just_chat.js" data-server-url="https://ai.bang.vawayai.com:5000" data-id-config=${configId} defer></script>`
+        `<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v7@main/dist/model_admin_just_chat.js" data-server-url="https://ai.bang.vawayai.com:5000" data-id-config=${configId} defer></script>`
           .replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
       );
 

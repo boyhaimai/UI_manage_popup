@@ -13,7 +13,7 @@ import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import CloseIcon from "@mui/icons-material/Close";
 import SendIcon from "@mui/icons-material/Send";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { Block } from "@mui/icons-material";
+import { Block, MoreHoriz } from "@mui/icons-material";
 
 import classNames from "classnames/bind";
 import styles from "./ManageMessage.module.scss";
@@ -26,6 +26,7 @@ export default function ChatUIClone() {
   const [adminMessage, setAdminMessage] = useState("");
   const [isAdminChatting, setIsAdminChatting] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
@@ -137,6 +138,37 @@ export default function ChatUIClone() {
       }
     } catch (err) {
       console.error("Lỗi khi join chat:", err);
+    }
+  };
+
+  const handleSendMessager = async () => {
+    if (!adminMessage.trim()) return;
+
+    setIsSending(true); // bắt đầu gửi
+
+    try {
+      const [chatId, domain] = selectedChat.chatId.split("@");
+      const response = await fetch(
+        "https://ai.bang.vawayai.com:5000/send-message-to-user",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chatId: `${chatId}@${domain}`,
+            message: adminMessage,
+            sender: "admin",
+          }),
+          credentials: "include",
+        }
+      );
+      const data = await response.json();
+      if (data.success) {
+        setAdminMessage("");
+      }
+    } catch (err) {
+      console.error("Lỗi khi gửi tin nhắn:", err);
+    } finally {
+      setIsSending(false); // kết thúc gửi
     }
   };
 
@@ -352,7 +384,7 @@ export default function ChatUIClone() {
         fullWidth
         className={cx("chat_dialog")}
       >
-        <DialogTitle sx={{ fontSize: "18px" }}>
+        <DialogTitle sx={{ fontSize: "18px", pl: 2 }}>
           {selectedChat
             ? `${selectedChat.domain} - ${selectedChat.chat_session_id}`
             : ""}
@@ -448,8 +480,20 @@ export default function ChatUIClone() {
                   "& .MuiInputBase-input": { fontSize: "14px" },
                 }}
               />
-              <IconButton onClick={handleSendMessage} color="primary">
-                <SendIcon />
+              <IconButton
+                onClick={handleSendMessage}
+                color="primary"
+                disabled={isSending}
+              >
+                {isSending ? (
+                  <MoreHoriz
+                    sx={{
+                      animation: "blinker 1s linear infinite",
+                    }}
+                  />
+                ) : (
+                  <SendIcon />
+                )}
               </IconButton>
             </Box>
           )}

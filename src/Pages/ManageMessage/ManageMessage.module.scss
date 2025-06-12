@@ -165,3 +165,8 @@ ar-track {
     border-radius: 16px !important;
   }
 }
+@keyframes blinker {
+  0% { opacity: 0.2; }
+  50% { opacity: 1; }
+  100% { opacity: 0.2; }
+}
