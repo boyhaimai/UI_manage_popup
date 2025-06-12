@@ -38,6 +38,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Avatar from "~/Components/Avatar/Avatar";
 import useDebounce from "~/hooks/useDebounce";
+import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpirationContext";
 
 const cx = classNames.bind(styles);
 const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
@@ -97,6 +98,7 @@ function SettingPage() {
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarError, setAvatarError] = useState("");
   const navigate = useNavigate();
+  const { triggerTokenExpiration } = useTokenExpiration();
   const wrapperRef = useRef();
   const headerRef = useRef();
   const fileInputRef = useRef();
@@ -128,7 +130,6 @@ function SettingPage() {
         setWebsites(websiteResponse.data.websites);
       } else {
         setError("Không tìm thấy danh sách website.");
-        navigate("/");
         return;
       }
 
@@ -147,7 +148,6 @@ function SettingPage() {
         }
       } else {
         setError("Không tìm thấy config_id. Vui lòng chọn website.");
-        navigate("/");
         return;
       }
 
@@ -182,7 +182,9 @@ function SettingPage() {
     } catch (err) {
       console.error("Fetch config/stats error:", err);
       setError(err.response?.data?.message || "Không thể kết nối đến server.");
-      navigate("/");
+      if (err.response?.status === 401) {
+        triggerTokenExpiration();
+      }
     } finally {
       setFetchLoading(false);
       setLoadingWebsite(false);
@@ -237,6 +239,9 @@ function SettingPage() {
           setError(
             err.response?.data?.message || "Không thể kết nối đến server."
           );
+          if (err.response?.status === 401) {
+            triggerTokenExpiration();
+          }
         });
     }
   };
@@ -293,6 +298,9 @@ function SettingPage() {
       }
     } catch (err) {
       setError(err.response?.data?.message || "Lỗi khi upload ảnh.");
+      if (err.response?.status === 401) {
+        triggerTokenExpiration();
+      }
     }
   };
 
@@ -374,6 +382,9 @@ function SettingPage() {
     } catch (err) {
       console.error("Save config error:", err);
       setError(err.response?.data?.message || "Không thể kết nối đến server.");
+      if (err.response?.status === 401) {
+        triggerTokenExpiration();
+      }
     } finally {
       setLoading(false);
     }
@@ -593,29 +604,6 @@ function SettingPage() {
                     />
                   </Box>
 
-                  {/* <Box sx={{ mb: 2 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                      <PowerSettingsNew sx={{ mr: 1, fontSize: 16 }} />
-                      <Typography fontSize={13} fontWeight="bold">
-                        Tình trạng
-                      </Typography>
-                    </Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        background: "#F7F7F9",
-                        borderRadius: "8px",
-                        padding: "0 10px 0 15px",
-                        gap: 2,
-                      }}
-                    >
-                      <Typography fontSize={13}>Hoạt động</Typography>
-                      <Switch checked={true} fontSize={16} />
-                    </Box>
-                  </Box> */}
-
                   <Box sx={{ mb: 2 }}>
                     <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                       <History sx={{ mr: 1, fontSize: 16 }} />
@@ -660,7 +648,7 @@ function SettingPage() {
                 </Box>
                 <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                    <Palette sx={{ mr: 1,fontSize: 16  }} />
+                    <Palette sx={{ mr: 1, fontSize: 16 }} />
                     <Typography fontSize={13} fontWeight="bold">
                       Màu cơ bản
                     </Typography>
@@ -681,8 +669,7 @@ function SettingPage() {
                               form.themeColor === color
                                 ? "2px solid #00897b"
                                 : "1px solid transparent",
-                            borderRadius: "6px"
-                            
+                            borderRadius: "6px",
                           }}
                         />
                       )
@@ -750,7 +737,7 @@ function SettingPage() {
                             form.textColor === color
                               ? "2px solid #00897b"
                               : "1px solid transparent",
-                          borderRadius: "6px"
+                          borderRadius: "6px",
                         }}
                       />
                     ))}

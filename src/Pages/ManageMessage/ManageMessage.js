@@ -14,6 +14,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import SendIcon from "@mui/icons-material/Send";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { Block } from "@mui/icons-material";
+import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpirationContext";
 
 import classNames from "classnames/bind";
 import styles from "./ManageMessage.module.scss";
@@ -29,6 +30,7 @@ export default function ChatUIClone() {
   const messageInputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
+  const { triggerTokenExpiration } = useTokenExpiration();
 
   // Hàm cuộn đến tin nhắn mới nhất
   const scrollToBottom = () => {
@@ -67,19 +69,27 @@ export default function ChatUIClone() {
             credentials: "include",
           }
         );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         if (data.success) {
-          setActiveChats(data.activeChats);
+          setActiveChats(data.activeChats || []);
+        } else {
+          throw new Error(data.message || "Không thể lấy danh sách active chats.");
         }
       } catch (err) {
         console.error("Lỗi khi lấy active chats:", err);
+        if (err.message.includes("401")) {
+          triggerTokenExpiration();
+        }
       }
     };
 
     fetchActiveChats();
     const interval = setInterval(fetchActiveChats, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [triggerTokenExpiration]);
 
   // Lấy lịch sử chat khi chọn một cuộc trò chuyện
   useEffect(() => {
@@ -94,23 +104,30 @@ export default function ChatUIClone() {
           )}`,
           { credentials: "include" }
         );
-
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         if (data.success) {
-          setChatMessages(data.messages);
+          setChatMessages(data.messages || []);
 
           // 👇 ẨN hiệu ứng sau khi render
           setTimeout(() => {}, 100); // 100ms để đảm bảo React đã render
+        } else {
+          throw new Error(data.message || "Không thể lấy lịch sử chat.");
         }
       } catch (err) {
         console.error("Lỗi khi lấy lịch sử chat:", err);
+        if (err.message.includes("401")) {
+          triggerTokenExpiration();
+        }
       }
     };
 
     fetchChatHistory();
     const interval = setInterval(fetchChatHistory, 5000);
     return () => clearInterval(interval);
-  }, [selectedChat]);
+  }, [selectedChat, triggerTokenExpiration]);
 
   // Cuộn đến tin nhắn mới nhất khi chatMessages thay đổi và admin đang tham gia chat
   useEffect(() => {
@@ -135,6 +152,9 @@ export default function ChatUIClone() {
           credentials: "include",
         }
       );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       if (data.success) {
         setIsAdminChatting(true);
@@ -143,9 +163,14 @@ export default function ChatUIClone() {
         setTimeout(() => {
           messageInputRef.current?.focus();
         }, 100); // delay nhỏ để đảm bảo component đã render
+      } else {
+        throw new Error(data.message || "Không thể join chat.");
       }
     } catch (err) {
       console.error("Lỗi khi join chat:", err);
+      if (err.message.includes("401")) {
+        triggerTokenExpiration();
+      }
     }
   };
 
@@ -176,6 +201,9 @@ export default function ChatUIClone() {
             credentials: "include",
           }
         );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         if (!data.success) {
           console.warn("Không thể bật lại bot:", data.message);
@@ -209,16 +237,23 @@ export default function ChatUIClone() {
           credentials: "include",
         }
       );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       if (data.success) {
         // Để xóa tin nhắn sau khi tắt hiệu ứng
         return true;
+      } else {
+        throw new Error(data.message || "Không thể gửi tin nhắn.");
       }
     } catch (err) {
       console.error("Lỗi khi gửi tin nhắn:", err);
+      if (err.message.includes("401")) {
+        triggerTokenExpiration();
+      }
+      return false;
     }
-
-    return false;
   };
 
   return (
@@ -419,33 +454,6 @@ export default function ChatUIClone() {
                 </Box>
               </Box>
             ))}
-            {/* {isTypingIndicator && (
-              <Box
-                display="flex"
-                justifyContent="flex-start"
-                mb={1}
-                pl={1}
-                sx={{ animation: "fadeIn 0.3s ease-in-out" }}
-              >
-                <Box
-                  sx={{
-                    backgroundColor: "#ff9800",
-                    color: "#fff",
-                    borderRadius: "20px",
-                    padding: "10px 14px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    width: "fit-content",
-                  }}
-                >
-                  <span className={cx("typing-dot")}></span>
-                  <span className={cx("typing-dot")}></span>
-                  <span className={cx("typing-dot")}></span>
-                </Box>
-              </Box>
-            )} */}
-
             <div ref={messagesEndRef} />
           </Box>
           {showScrollButton && (

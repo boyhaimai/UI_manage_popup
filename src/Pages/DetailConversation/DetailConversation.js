@@ -28,6 +28,7 @@ import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
+import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpirationContext";
 
 import classNames from "classnames/bind";
 import styles from "./DetailConversation.module.scss";
@@ -57,6 +58,7 @@ function DetailConversation() {
   const [selectedSessionId, setSelectedSessionId] = useState("");
   const wrapperRef = useRef();
   const headerRef = useRef();
+  const { triggerTokenExpiration } = useTokenExpiration();
 
   // Lấy idConfig và domain
   const fetchConfigAndDomain = async () => {
@@ -71,7 +73,6 @@ function DetailConversation() {
         setIdConfig(configResponse.data.config_id);
       } else {
         setError("Không tìm thấy config_id. Vui lòng chọn website.");
-        navigate("/");
         return;
       }
 
@@ -92,7 +93,9 @@ function DetailConversation() {
       }
     } catch (err) {
       setError(err.response?.data?.message || "Lỗi khi lấy thông tin.");
-      navigate("/");
+      if (err.response?.status === 401) {
+        triggerTokenExpiration();
+      }
     } finally {
       setLoading(false);
     }
@@ -153,6 +156,9 @@ function DetailConversation() {
     } catch (err) {
       console.error("Lỗi khi lấy lịch sử:", err);
       setError(err.response?.data?.message || "Lỗi server.");
+      if (err.response?.status === 401) {
+        triggerTokenExpiration();
+      }
       setMessagesBySession({});
       setTotalConversations(0);
     } finally {
@@ -322,7 +328,7 @@ function DetailConversation() {
               fullWidth
               variant="outlined"
               size="small"
-              sx={{ fontSize: 14 }}
+              sx={{ fontSize: 14, mt: 1 }}
               InputProps={{
                 sx: { fontSize: 14 },
                 endAdornment: searchInput ? (
@@ -350,6 +356,7 @@ function DetailConversation() {
                 padding: "6px 16px",
                 bgcolor: "#0F172A",
                 "&:hover": { bgcolor: "#1e293b" },
+                textTransform: "none",
               }}
               disabled={fetching || !searchInput.trim()}
             >
@@ -367,6 +374,7 @@ function DetailConversation() {
                 padding: "6px 16px",
                 borderColor: "#e0e0e0",
                 color: "#1e1e1e",
+                textTransform: "none",
                 "&:hover": { borderColor: "#0F172A" },
               }}
             >
@@ -383,6 +391,7 @@ function DetailConversation() {
                 padding: "6px 16px",
                 borderColor: "#e0e0e0",
                 color: "#1e1e1e",
+                textTransform: "none",
                 "&:hover": { borderColor: "#0F172A" },
               }}
             >

@@ -12,12 +12,12 @@ import {
   MenuItem,
   Alert,
   Snackbar,
-  Tooltip,
   Table,
   TableHead,
   TableCell,
   TableRow,
   TableBody,
+  Tooltip,
 } from "@mui/material";
 import {
   Add,
@@ -32,6 +32,7 @@ import styles from "./ManagePage.module.scss";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpirationContext";
 
 const cx = classNames.bind(styles);
 const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
@@ -52,7 +53,6 @@ function ManagePage() {
     dailyPageViews: [],
     visitHistory: [], // Thêm trường visitHistory
   });
-  const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [loadingWebsite, setLoadingWebsite] = useState(false);
   const [error, setError] = useState("");
@@ -62,6 +62,9 @@ function ManagePage() {
   const [currentDomain, setCurrentDomain] = useState("");
   const [id_config, setIdConfig] = useState("");
   const navigate = useNavigate();
+  const { triggerTokenExpiration } = useTokenExpiration();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
   const wrapperRef = useRef();
   const headerRef = useRef();
 
@@ -87,7 +90,6 @@ function ManagePage() {
         setWebsites(websiteResponse.data.websites);
       } else {
         setError("Không tìm thấy danh sách website.");
-        navigate("/");
         return;
       }
 
@@ -106,7 +108,6 @@ function ManagePage() {
         }
       } else {
         setError("Không tìm thấy config_id. Vui lòng chọn website.");
-        navigate("/");
         return;
       }
 
@@ -126,7 +127,9 @@ function ManagePage() {
     } catch (err) {
       console.error("Fetch config/stats error:", err);
       setError(err.response?.data?.message || "Không thể kết nối đến server.");
-      navigate("/");
+      if (err.response?.status === 401) {
+        triggerTokenExpiration(); // Kích hoạt thông báo khi lỗi 401
+      }
     } finally {
       setFetchLoading(false);
       setLoadingWebsite(false);
@@ -206,6 +209,9 @@ function ManagePage() {
           setError(
             err.response?.data?.message || "Không thể kết nối đến server."
           );
+          if (err.response?.status === 401) {
+            triggerTokenExpiration(); // Kích hoạt thông báo khi lỗi 401
+          }
         });
     }
   };
@@ -260,6 +266,17 @@ function ManagePage() {
       date.getFullYear() === today.getFullYear()
     );
   };
+
+  const todayVisits = (stats.visitHistory || [])
+    .filter((visit) => isToday(visit.timestamp))
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // mới nhất trước
+
+  const paginatedVisits = todayVisits.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(todayVisits.length / itemsPerPage);
 
   return (
     <div className={cx("wrapper")} ref={wrapperRef}>
@@ -401,19 +418,16 @@ function ManagePage() {
                           }}
                         >
                           <Box>
-                            {" "}
                             <p style={{ fontSize: "12px", marginTop: "8px" }}>
                               Đã trả lời
-                            </p>{" "}
+                            </p>
                             <Typography fontSize={36} mr={2}>
-                              {stats.conversationsAnswered}{" "}
+                              {stats.conversationsAnswered}
                             </Typography>
                           </Box>
-
                           <Box>
                             <p style={{ fontSize: "12px", marginTop: "8px" }}>
-                              {" "}
-                              Đã bỏ lỡ{" "}
+                              Đã bỏ lỡ
                             </p>
                             <Typography fontSize={36}>
                               {stats.conversationsMissed}
@@ -496,7 +510,6 @@ function ManagePage() {
                                   Hôm nay
                                 </p>
                               )}
-
                               {item.value}
                             </Box>
                             {item.delta && (
@@ -559,30 +572,56 @@ function ManagePage() {
                     borderRadius: 2,
                     width: "100%",
                     height: "100%",
-                    overflowY: "auto",
+                    overflow: "hidden",
                   }}
                 >
                   <Typography fontWeight="bold" fontSize={18} mb={2}>
                     Lịch sử truy cập
                   </Typography>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: "bold", fontSize: 13 }}>
-                          Chat Session ID
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: "bold", fontSize: 13 }}>
-                          Số lần truy cập
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: "bold", fontSize: 13 }}>
-                          Thời gian
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {(stats.visitHistory || [])
-                        .filter((visit) => isToday(visit.timestamp))
-                        .map((visit, index) => (
+                  <Box sx={{ maxHeight: 360, overflowY: "auto" }}>
+                    <Table stickyHeader>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell
+                            sx={{
+                              fontWeight: "bold",
+                              fontSize: 13,
+                              backgroundColor: "#f5f5f5",
+                              position: "sticky",
+                              top: 0,
+                              zIndex: 1,
+                            }}
+                          >
+                            Chat Session ID
+                          </TableCell>
+                          <TableCell
+                            sx={{
+                              fontWeight: "bold",
+                              fontSize: 13,
+                              backgroundColor: "#f5f5f5",
+                              position: "sticky",
+                              top: 0,
+                              zIndex: 1,
+                            }}
+                          >
+                            Số lần truy cập
+                          </TableCell>
+                          <TableCell
+                            sx={{
+                              fontWeight: "bold",
+                              fontSize: 13,
+                              backgroundColor: "#f5f5f5",
+                              position: "sticky",
+                              top: 0,
+                              zIndex: 1,
+                            }}
+                          >
+                            Thời gian
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {paginatedVisits.map((visit, index) => (
                           <TableRow key={index}>
                             <TableCell sx={{ fontSize: 12 }}>
                               {visit.chat_session_id}
@@ -591,12 +630,49 @@ function ManagePage() {
                               {visit.visit_count}
                             </TableCell>
                             <TableCell sx={{ fontSize: 12 }}>
-                              {visit.timestamp}
+                              {new Date(visit.timestamp).toLocaleString(
+                                "vi-VN",
+                                {
+                                  timeZone: "Asia/Ho_Chi_Minh",
+                                }
+                              )}
                             </TableCell>
                           </TableRow>
                         ))}
-                    </TableBody>
-                  </Table>
+                      </TableBody>
+                    </Table>
+                  </Box>
+
+                  {totalPages > 1 && (
+                    <Box display="flex" justifyContent="center" mt={1}>
+                      <Button
+                        variant="outlined"
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(prev - 1, 1))
+                        }
+                        disabled={currentPage === 1}
+                        sx={{ mx: 1, fontSize: "12px" }}
+                      >
+                        Trang trước
+                      </Button>
+                      <Typography sx={{ fontSize: "14px", mt: 1.2 }}>
+                        Trang {currentPage} / {totalPages}
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        onClick={() =>
+                          setCurrentPage((prev) =>
+                            Math.min(prev + 1, totalPages)
+                          )
+                        }
+                        disabled={currentPage === totalPages}
+                        sx={{ mx: 1, fontSize: "12px" }}
+                      >
+                        Trang sau
+                      </Button>
+                    </Box>
+                  )}
+
                   {(!stats.visitHistory || stats.visitHistory.length === 0) && (
                     <Typography
                       sx={{ textAlign: "center", color: "#aaa", mt: 2 }}

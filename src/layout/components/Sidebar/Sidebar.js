@@ -21,22 +21,22 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Alert,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 import styles from "./Sidebar.module.scss";
 import Avatar from "~/Components/Avatar/Avatar";
+import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpirationContext";
 
 const cx = classNames.bind(styles);
 const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
 
 function Sidebar() {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [error, setError] = useState("");
   const [adminInfo, setAdminInfo] = useState(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
+  const { triggerTokenExpiration } = useTokenExpiration();
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -44,7 +44,6 @@ function Sidebar() {
 
   const handleClose = () => {
     setAnchorEl(null);
-    setError("");
   };
 
   const handleLogout = async () => {
@@ -59,11 +58,13 @@ function Sidebar() {
           "authToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
         navigate(config.routes.login_admin);
       } else {
-        setError(response.data.message || "Đăng xuất thất bại.");
+        throw new Error(response.data.message || "Đăng xuất thất bại.");
       }
     } catch (err) {
       console.error("Logout error:", err);
-      setError(err.response?.data?.message || "Không thể kết nối đến server.");
+      if (err.response?.status === 401) {
+        triggerTokenExpiration();
+      }
     } finally {
       handleClose();
     }
@@ -78,11 +79,13 @@ function Sidebar() {
         if (res.data.success) {
           setAdminInfo(res.data.admin);
         } else {
-          setError(res.data.message || "Không lấy được thông tin.");
+          throw new Error(res.data.message || "Không lấy được thông tin.");
         }
       } catch (err) {
         console.error("Lỗi khi lấy thông tin admin:", err);
-        setError("Lỗi server hoặc chưa đăng nhập.");
+        if (err.response?.status === 401) {
+          triggerTokenExpiration();
+        }
       }
     };
 
@@ -92,11 +95,6 @@ function Sidebar() {
   return (
     <aside className={cx("wrapper")}>
       <h4 className={cx("title")}>Administration</h4>
-      {error && (
-        <Alert severity="error" sx={{ mb: 2, fontSize: "14px" }}>
-          {error}
-        </Alert>
-      )}
       <MenuCustom>
         <MenuItemCustom
           title="Tổng quan"
@@ -178,8 +176,7 @@ function Sidebar() {
                 maxWidth: "150px",
               }}
             >
-              {adminInfo?.phoneNumber || ""}{" "}
-              {/* Sửa từ email thành phoneNumber */}
+              {adminInfo?.phoneNumber || ""} {/* Sửa từ email thành phoneNumber */}
             </Typography>
           </Box>
         </Box>
