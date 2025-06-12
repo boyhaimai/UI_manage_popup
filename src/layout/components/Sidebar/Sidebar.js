@@ -10,18 +10,13 @@ import {
   Dashboard,
   ErrorRounded,
   Forum,
+  HelpRounded,
   Logout,
   Person,
   SettingsRounded,
   Telegram,
 } from "@mui/icons-material";
-import {
-  Box,
-  Typography,
-  IconButton,
-  Menu,
-  MenuItem,
-} from "@mui/material";
+import { Box, Typography, IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 import styles from "./Sidebar.module.scss";
@@ -31,7 +26,7 @@ import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpir
 const cx = classNames.bind(styles);
 const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
 
-function Sidebar() {
+function Sidebar({ setHeaderOpen }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [adminInfo, setAdminInfo] = useState(null);
   const open = Boolean(anchorEl);
@@ -70,6 +65,10 @@ function Sidebar() {
     }
   };
 
+  const handleSupportClick = () => {
+     setHeaderOpen((prev) => !prev);  // Kích hoạt Header khi nhấp Support
+  };
+
   useEffect(() => {
     const fetchAdminInfo = async () => {
       try {
@@ -90,6 +89,7 @@ function Sidebar() {
     };
 
     fetchAdminInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -122,11 +122,11 @@ function Sidebar() {
             to="https://vaway.vn/"
             icon={<ErrorRounded className={cx("icon_menu")} />}
           />
-          {/* <MenuItemCustom
+          <MenuItemCustom
             title="Support"
-            to="/feedback"
+            onClick={handleSupportClick}
             icon={<HelpRounded className={cx("icon_menu")} />}
-          /> */}
+          />
         </Box>
       </MenuCustom>
       <Box
@@ -176,7 +176,8 @@ function Sidebar() {
                 maxWidth: "150px",
               }}
             >
-              {adminInfo?.phoneNumber || ""} {/* Sửa từ email thành phoneNumber */}
+              {adminInfo?.phoneNumber || ""}{" "}
+              {/* Sửa từ email thành phoneNumber */}
             </Typography>
           </Box>
         </Box>

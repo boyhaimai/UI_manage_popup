@@ -391,7 +391,7 @@ export default function ChatUIClone() {
                 </Box>
               ))
             ) : (
-              <Typography align="center" color="textSecondary">
+              <Typography align="center" color="textSecondary" sx={{ mt: 2, fontSize: 16 }}>
                 Không có cuộc trò chuyện nào đang hoạt động.
               </Typography>
             )}
