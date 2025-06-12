@@ -13,7 +13,7 @@ import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import CloseIcon from "@mui/icons-material/Close";
 import SendIcon from "@mui/icons-material/Send";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { Block, MoreHoriz } from "@mui/icons-material";
+import { Block } from "@mui/icons-material";
 
 import classNames from "classnames/bind";
 import styles from "./ManageMessage.module.scss";
@@ -26,7 +26,7 @@ export default function ChatUIClone() {
   const [adminMessage, setAdminMessage] = useState("");
   const [isAdminChatting, setIsAdminChatting] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [isSending, setIsSending] = useState(false);
+  const messageInputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
@@ -98,6 +98,9 @@ export default function ChatUIClone() {
         const data = await response.json();
         if (data.success) {
           setChatMessages(data.messages);
+
+          // 👇 ẨN hiệu ứng sau khi render
+          setTimeout(() => {}, 100); // 100ms để đảm bảo React đã render
         }
       } catch (err) {
         console.error("Lỗi khi lấy lịch sử chat:", err);
@@ -135,40 +138,22 @@ export default function ChatUIClone() {
       const data = await response.json();
       if (data.success) {
         setIsAdminChatting(true);
+
+        // 👇 Focus vào ô nhập sau khi join chat
+        setTimeout(() => {
+          messageInputRef.current?.focus();
+        }, 100); // delay nhỏ để đảm bảo component đã render
       }
     } catch (err) {
       console.error("Lỗi khi join chat:", err);
     }
   };
 
-  const handleSendMessager = async () => {
+  const handleSendingMessage = async () => {
     if (!adminMessage.trim()) return;
-
-    setIsSending(true); // bắt đầu gửi
-
-    try {
-      const [chatId, domain] = selectedChat.chatId.split("@");
-      const response = await fetch(
-        "https://ai.bang.vawayai.com:5000/send-message-to-user",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chatId: `${chatId}@${domain}`,
-            message: adminMessage,
-            sender: "admin",
-          }),
-          credentials: "include",
-        }
-      );
-      const data = await response.json();
-      if (data.success) {
-        setAdminMessage("");
-      }
-    } catch (err) {
-      console.error("Lỗi khi gửi tin nhắn:", err);
-    } finally {
-      setIsSending(false); // kết thúc gửi
+    const success = await handleSendMessage();
+    if (success) {
+      setAdminMessage(""); // Xoá nội dung sau khi gửi xong
     }
   };
 
@@ -226,11 +211,14 @@ export default function ChatUIClone() {
       );
       const data = await response.json();
       if (data.success) {
-        setAdminMessage("");
+        // Để xóa tin nhắn sau khi tắt hiệu ứng
+        return true;
       }
     } catch (err) {
       console.error("Lỗi khi gửi tin nhắn:", err);
     }
+
+    return false;
   };
 
   return (
@@ -431,14 +419,41 @@ export default function ChatUIClone() {
                 </Box>
               </Box>
             ))}
+            {/* {isTypingIndicator && (
+              <Box
+                display="flex"
+                justifyContent="flex-start"
+                mb={1}
+                pl={1}
+                sx={{ animation: "fadeIn 0.3s ease-in-out" }}
+              >
+                <Box
+                  sx={{
+                    backgroundColor: "#ff9800",
+                    color: "#fff",
+                    borderRadius: "20px",
+                    padding: "10px 14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    width: "fit-content",
+                  }}
+                >
+                  <span className={cx("typing-dot")}></span>
+                  <span className={cx("typing-dot")}></span>
+                  <span className={cx("typing-dot")}></span>
+                </Box>
+              </Box>
+            )} */}
+
             <div ref={messagesEndRef} />
           </Box>
           {showScrollButton && (
             <IconButton
               onClick={scrollToBottom}
               sx={{
-                position: "absolute",
-                top: "50%",
+                position: "fixed",
+                bottom: "31%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
                 bgcolor: "white",
@@ -468,32 +483,21 @@ export default function ChatUIClone() {
           ) : (
             <Box display="flex" p={2} borderTop="1px solid #e0e0e0">
               <TextField
+                inputRef={messageInputRef}
                 fullWidth
                 value={adminMessage}
                 onChange={(e) => setAdminMessage(e.target.value)}
                 placeholder="Nhập tin nhắn..."
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSendMessage();
+                  if (e.key === "Enter") handleSendingMessage();
                 }}
                 sx={{
                   "& .MuiInputBase-root": { borderRadius: "16px" },
                   "& .MuiInputBase-input": { fontSize: "14px" },
                 }}
               />
-              <IconButton
-                onClick={handleSendMessage}
-                color="primary"
-                disabled={isSending}
-              >
-                {isSending ? (
-                  <MoreHoriz
-                    sx={{
-                      animation: "blinker 1s linear infinite",
-                    }}
-                  />
-                ) : (
-                  <SendIcon />
-                )}
+              <IconButton onClick={handleSendingMessage} color="primary">
+                <SendIcon />
               </IconButton>
             </Box>
           )}

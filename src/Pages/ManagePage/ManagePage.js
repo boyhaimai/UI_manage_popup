@@ -251,6 +251,16 @@ function ManagePage() {
     return "";
   };
 
+  const isToday = (timestamp) => {
+    const today = new Date();
+    const date = new Date(timestamp);
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
   return (
     <div className={cx("wrapper")} ref={wrapperRef}>
       <Box className={cx("title_header")} ref={headerRef}>
@@ -467,7 +477,13 @@ function ManagePage() {
                             >
                               {item.icon} {item.title}
                             </Typography>
-                            <Box sx={{ fontSize: 36, fontWeight: "bold", marginLeft: "20px" }}>
+                            <Box
+                              sx={{
+                                fontSize: 36,
+                                fontWeight: "bold",
+                                marginLeft: "20px",
+                              }}
+                            >
                               {item.title !== "Cuộc Trò Chuyện" && (
                                 <p
                                   style={{
@@ -536,7 +552,7 @@ function ManagePage() {
                 height: 500,
               }}
             >
-              <Box sx={{ width: "48%", overflow: "hidden" }}>
+              <Box sx={{ width: "100%", overflow: "hidden" }}>
                 <Paper
                   sx={{
                     p: 2,
@@ -552,25 +568,33 @@ function ManagePage() {
                   <Table>
                     <TableHead>
                       <TableRow>
-                        <TableCell sx={{ fontWeight: "bold",fontSize: 13 }}>
+                        <TableCell sx={{ fontWeight: "bold", fontSize: 13 }}>
                           Chat Session ID
                         </TableCell>
-                        <TableCell sx={{ fontWeight: "bold",fontSize: 13 }}>
+                        <TableCell sx={{ fontWeight: "bold", fontSize: 13 }}>
                           Số lần truy cập
                         </TableCell>
-                        <TableCell sx={{ fontWeight: "bold",fontSize: 13 }}>
+                        <TableCell sx={{ fontWeight: "bold", fontSize: 13 }}>
                           Thời gian
                         </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {(stats.visitHistory || []).map((visit, index) => (
-                        <TableRow key={index}>
-                          <TableCell sx={{fontSize: 12}}>{visit.chat_session_id}</TableCell>
-                          <TableCell sx={{fontSize: 12}}>{visit.visit_count}</TableCell>
-                          <TableCell sx={{fontSize: 12}}>{visit.timestamp}</TableCell>
-                        </TableRow>
-                      ))}
+                      {(stats.visitHistory || [])
+                        .filter((visit) => isToday(visit.timestamp))
+                        .map((visit, index) => (
+                          <TableRow key={index}>
+                            <TableCell sx={{ fontSize: 12 }}>
+                              {visit.chat_session_id}
+                            </TableCell>
+                            <TableCell sx={{ fontSize: 12 }}>
+                              {visit.visit_count}
+                            </TableCell>
+                            <TableCell sx={{ fontSize: 12 }}>
+                              {visit.timestamp}
+                            </TableCell>
+                          </TableRow>
+                        ))}
                     </TableBody>
                   </Table>
                   {(!stats.visitHistory || stats.visitHistory.length === 0) && (
@@ -582,28 +606,6 @@ function ManagePage() {
                   )}
                 </Paper>
               </Box>
-              <Paper
-                sx={{
-                  p: 2,
-                  borderRadius: 2,
-                  mb: 2,
-                  height: "500px",
-                  width: "48%",
-                }}
-              >
-                <Typography fontWeight="bold" fontSize={16} mb={2}>
-                  Thông Tin Mới Nhất
-                </Typography>
-                <Box
-                  sx={{
-                    textAlign: "center",
-                    color: "#aaa",
-                    fontStyle: "italic",
-                  }}
-                >
-                  Không có thông báo mới.
-                </Box>
-              </Paper>
             </Grid>
           </>
         )}
