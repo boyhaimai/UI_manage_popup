@@ -101,7 +101,6 @@ function SettingPage() {
   const { triggerTokenExpiration } = useTokenExpiration();
   const wrapperRef = useRef();
   const headerRef = useRef();
-  const fileInputRef = useRef();
 
   const debouncedThemeColor = useDebounce({
     value: form.themeColor,
@@ -260,6 +259,31 @@ function SettingPage() {
     }
   };
 
+  const handleUploadImage = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+    formData.append("type", "popup");
+    formData.append("id_config", form.id_config); // cần để server biết ảnh cũ
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/upload-image`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      if (response.data.success && response.data.path) {
+        setForm((prev) => ({ ...prev, avatar: response.data.path }));
+      }
+    } catch (err) {
+      console.error("Lỗi khi upload ảnh:", err);
+    }
+  };
+
   const handlePositionChange = (value) => {
     setForm({ ...form, position: value });
   };
@@ -269,39 +293,6 @@ function SettingPage() {
       ...form,
       historyEnabled: form.historyEnabled === "true" ? "false" : "true",
     });
-  };
-
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setAvatarFile(file);
-    setAvatarError("");
-    const formData = new FormData();
-    formData.append("avatar", file);
-
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/upload-avatar`,
-        formData,
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-
-      if (response.data.success) {
-        setForm({ ...form, avatar: response.data.url });
-        setError("");
-      } else {
-        setError(response.data.message);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || "Lỗi khi upload ảnh.");
-      if (err.response?.status === 401) {
-        triggerTokenExpiration();
-      }
-    }
   };
 
   const handleCopy = () => {
@@ -424,32 +415,49 @@ function SettingPage() {
             sx={{
               fontSize: "14px",
               textTransform: "none",
-              borderColor: "#0F172A",
+              borderColor: "var(--c_white)",
               height: 40,
               px: 2,
-              color: "var(--letter_color)",
+              color: "var(--c_white) !important",
               "&:hover": {
                 borderColor: "#1e293b",
                 backgroundColor: "#f8f9fa",
+                color: "var(--c_letter) !important",
               },
             }}
           >
             Thêm Website
           </Button>
           <FormControl variant="outlined" size="small" sx={{ minWidth: 200 }}>
-            <InputLabel sx={{ fontSize: "14px" }}>Website</InputLabel>
+            <InputLabel
+              sx={{ fontSize: "14px", color: "var(--layer_background)" }}
+            >
+              Website
+            </InputLabel>
             <Select
               value={selectedWebsite}
               onChange={handleWebsiteChange}
               label="Website"
               sx={{
                 fontSize: "14px",
+                color: "var(--layer_background)",
                 "& .MuiSelect-select": { py: 1.5 },
-                whiteSpace: " nowrap",
+                whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 display: "block",
                 maxWidth: "100%",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "var(--layer_background) !important",
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "var(--layer_background)",
+                  color: "var(--layer_background) !important",
+                },
+                "& .MuiSelect-icon": {
+                  color: "var(--layer_background)",
+                  right: "-2px",
+                },
               }}
               disabled={loadingWebsite}
             >
@@ -486,8 +494,9 @@ function SettingPage() {
               onClick={handleSubmit}
               sx={{
                 fontSize: "14px",
-                bgcolor: "#0F172A",
-                "&:hover": { bgcolor: "#1e293b" },
+                color: "var(--c_letter)",
+                bgcolor: "var(--layer_background)",
+                "&:hover": { bgcolor: "var(--layer_background)" },
                 py: 1,
                 px: 2,
                 height: 40,
@@ -500,7 +509,16 @@ function SettingPage() {
         </Box>
       </Box>
 
-      <Box p={4} mt={7}>
+      <Box
+        p={4}
+        mt={7}
+        sx={{
+          backgroundColor: "var(--c_white)",
+          marginLeft: "2px",
+          marginRight: "2px",
+          height: "100%",
+        }}
+      >
         {error && (
           <Alert severity="error" sx={{ mb: 2, fontSize: "14px" }}>
             {error}
@@ -528,8 +546,8 @@ function SettingPage() {
             >
               <Box sx={{ width: "49%" }} spacing={2}>
                 <Box>
-                  <Box display="flex" alignItems="center" gap={2} mb={2}>
-                    <Box position="relative">
+                  <Box position="relative">
+                    <label htmlFor="upload-avatar">
                       <Box
                         sx={{
                           width: 80,
@@ -543,6 +561,8 @@ function SettingPage() {
                           color: "white",
                           fontWeight: "bold",
                           overflow: "hidden",
+                          cursor: "pointer", // 👈 để hiện tay chuột
+                          mb: 1
                         }}
                       >
                         <Avatar
@@ -555,18 +575,21 @@ function SettingPage() {
                           }
                           alt="Avatar"
                           className="avatar_preview"
+                          sx={{ width: "100%", height: "100%" }}
                           onError={(e) =>
                             (e.target.src = "/fallback-avatar.jpg")
                           }
                         />
                       </Box>
-                    </Box>
-                    <Box>
-                      <Typography fontSize={13} color="text.secondary">
-                        Chúng tôi đề xuất ảnh có kích thước tối thiểu 512 × 512
-                        cho trang.
-                      </Typography>
-                    </Box>
+                    </label>
+
+                    <input
+                      id="upload-avatar"
+                      hidden
+                      accept="image/*"
+                      type="file"
+                      onChange={handleUploadImage}
+                    />
                   </Box>
 
                   <Box sx={{ lineHeight: 1.5, mb: 2 }}>
@@ -587,6 +610,7 @@ function SettingPage() {
                       sx={{ "& .MuiInputBase-input": inputStyle }}
                     />
                   </Box>
+
                   <Box sx={{ mb: 2 }}>
                     <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                       <Edit sx={{ mr: 1, fontSize: 16 }} />
@@ -667,9 +691,16 @@ function SettingPage() {
                             bgcolor: color,
                             border:
                               form.themeColor === color
-                                ? "2px solid #00897b"
+                                ? "3px solid var(--c_letter)"
                                 : "1px solid transparent",
                             borderRadius: "6px",
+                            "&:hover": {
+                              bgcolor: color, // giữ nguyên màu
+                              border:
+                                form.themeColor === color
+                                  ? "3px solid var(--c_letter)"
+                                  : "1px solid tr ansparent", // giữ viền
+                            },
                           }}
                         />
                       )
@@ -728,6 +759,7 @@ function SettingPage() {
                     {["#ffffff", "#1e1e1e", "#cccccc"].map((color) => (
                       <IconButton
                         key={color}
+                        disableRipple
                         onClick={() => setForm({ ...form, textColor: color })}
                         sx={{
                           width: 32,
@@ -736,8 +768,15 @@ function SettingPage() {
                           border:
                             form.textColor === color
                               ? "2px solid #00897b"
-                              : "1px solid transparent",
+                              : "1px solid var(--c_letter)", // 👈 Border đen mặc định
                           borderRadius: "6px",
+                          "&:hover": {
+                            bgcolor: color, // 👈 Không đổi màu
+                            border:
+                              form.textColor === color
+                                ? "2px solid #00897b"
+                                : "1px solid var(--c_letter)", // 👈 Giữ border
+                          },
                         }}
                       />
                     ))}
@@ -808,7 +847,7 @@ function SettingPage() {
                     fullWidth
                     multiline
                     rows={8}
-                    value={`<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v3@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`}
+                    value={`<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v7@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`}
                     InputProps={{
                       style: { fontFamily: "monospace", fontSize: 14 },
                       readOnly: true,

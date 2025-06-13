@@ -11,7 +11,7 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import {  Send } from "@mui/icons-material";
+import { Send } from "@mui/icons-material";
 import classNames from "classnames/bind";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -135,7 +135,10 @@ export default function ChatWidgetSetupUI() {
       formData.append("position", "bottom-right");
       formData.append("historyEnabled", "true");
       formData.append("serverUrl", "https://ai.bang.vawayai.com:5000");
-      formData.append("webhookUrl", "https://bang.daokhaccu.top/webhook/save_history");
+      formData.append(
+        "webhookUrl",
+        "https://bang.daokhaccu.top/webhook/save_history"
+      );
 
       if (!useDefault) {
         if (logoType === "upload" && logoFile) {
@@ -145,10 +148,14 @@ export default function ChatWidgetSetupUI() {
         }
       }
 
-      const response = await axios.post(`${API_BASE_URL}/save-config`, formData, {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/save-config`,
+        formData,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
       if (response.data.success) {
         setSuccess("Lưu cấu hình thành công!");
@@ -158,9 +165,7 @@ export default function ChatWidgetSetupUI() {
         return false;
       }
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Không thể kết nối đến server."
-      );
+      setError(err.response?.data?.message || "Không thể kết nối đến server.");
       return false;
     } finally {
       setLoading(false);
@@ -292,12 +297,13 @@ export default function ChatWidgetSetupUI() {
                       //   document.getElementById("logo-upload").click()
                       // }
                     >
-                      {logo && (
-                        <Avatar src={logo} sx={{ width: 64, height: 64 }} />
-                      ) 
-                      // : (
-                      //   <UploadFile />
-                      // )
+                      {
+                        logo && (
+                          <Avatar src={logo} sx={{ width: 64, height: 64 }} />
+                        )
+                        // : (
+                        //   <UploadFile />
+                        // )
                       }
                       {/* <input
                         id="logo-upload"
@@ -342,6 +348,11 @@ export default function ChatWidgetSetupUI() {
                             height: 32,
                             border: color === c ? "2px solid black" : "none",
                             cursor: "pointer",
+                            "&:hover": {
+                              bgcolor: c, // giữ nguyên màu khi hover
+                              boxShadow: "none", // loại bỏ shadow nếu có
+                              border: color === c ? "2px solid black" : "none", // giữ viền nếu đang chọn
+                            },
                           }}
                           onClick={() => setColor(c)}
                         />
@@ -545,17 +556,20 @@ export default function ChatWidgetSetupUI() {
                           py={1}
                           borderRadius={2}
                         >
-                          <Typography fontSize={14} >CHÀO! Tôi là một trợ lý AI. Làm thế nào tôi có thể hỗ trợ bạn?</Typography>
+                          <Typography fontSize={14}>
+                            CHÀO! Tôi là một trợ lý AI. Làm thế nào tôi có thể
+                            hỗ trợ bạn?
+                          </Typography>
                         </Box>
                       </Box>
                     </Box>
 
-                   <Box position={"absolute"} bottom={0} width="100%">
+                    <Box position={"absolute"} bottom={0} width="100%">
                       <Box
                         borderTop="1px solid #ddd"
                         px={2}
                         py={1}
-                        textAlign="center"                       
+                        textAlign="center"
                       >
                         <Typography
                           variant="caption"
@@ -582,7 +596,7 @@ export default function ChatWidgetSetupUI() {
                           </a>
                         </Typography>
                       </Box>
-  
+
                       <Box
                         px={2}
                         py={1}
@@ -608,7 +622,7 @@ export default function ChatWidgetSetupUI() {
                           <Send sx={{ fontSize: 25, color: color, ml: 1 }} />
                         </IconButton>
                       </Box>
-                   </Box>
+                    </Box>
                   </Paper>
                   <button
                     className={cx("chat-toggle-btn")}

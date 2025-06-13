@@ -328,9 +328,30 @@ function DetailConversation() {
               fullWidth
               variant="outlined"
               size="small"
-              sx={{ fontSize: 14, mt: 1 }}
+              sx={{
+                mt: 1,
+                fontSize: 14,
+                "& .MuiOutlinedInput-root": {
+                  color: "var(--layer_background)",
+                  "& fieldset": {
+                    borderColor: "var(--layer_background)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "var(--layer_background)",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "var(--layer_background)",
+                  },
+                },
+                "& .MuiInputLabel-root": {
+                  color: "var(--layer_background)",
+                  fontSize: 14,
+                },
+                "& .MuiInputLabel-root.Mui-focused": {
+                  color: "var(--layer_background)",
+                },
+              }}
               InputProps={{
-                sx: { fontSize: 14 },
                 endAdornment: searchInput ? (
                   <InputAdornment position="end">
                     <IconButton
@@ -338,10 +359,16 @@ function DetailConversation() {
                       edge="end"
                       size="small"
                     >
-                      <ClearIcon sx={{ fontSize: "15px" }} />
+                      <ClearIcon
+                        sx={{
+                          fontSize: "15px",
+                          color: "var(--layer_background)",
+                        }}
+                      />
                     </IconButton>
                   </InputAdornment>
                 ) : null,
+                sx: { fontSize: 14 },
               }}
               InputLabelProps={{ sx: { fontSize: 14 } }}
             />
@@ -354,9 +381,13 @@ function DetailConversation() {
                 fontSize: 14,
                 height: "100%",
                 padding: "6px 16px",
-                bgcolor: "#0F172A",
-                "&:hover": { bgcolor: "#1e293b" },
+                bgcolor: "var(--layer_background)",
+                "&:hover": {
+                  bgcolor: "var(--layer_background)", // hoặc darken bằng color lib nếu muốn
+                  opacity: 0.9,
+                },
                 textTransform: "none",
+                color: "var(--c_letter)",
               }}
               disabled={fetching || !searchInput.trim()}
             >
@@ -372,10 +403,13 @@ function DetailConversation() {
                 fontSize: 14,
                 height: "100%",
                 padding: "6px 16px",
-                borderColor: "#e0e0e0",
-                color: "#1e1e1e",
+                borderColor: "var(--layer_background)",
+                color: "var(--layer_background)",
                 textTransform: "none",
-                "&:hover": { borderColor: "#0F172A" },
+                "&:hover": {
+                  borderColor: "var(--layer_background)",
+                  backgroundColor: "rgba(0,0,0,0.04)", // hoặc rgba phù hợp
+                },
               }}
             >
               Lọc
@@ -389,10 +423,13 @@ function DetailConversation() {
                 fontSize: 14,
                 height: "100%",
                 padding: "6px 16px",
-                borderColor: "#e0e0e0",
-                color: "#1e1e1e",
+                borderColor: "var(--layer_background)",
+                color: "var(--layer_background)",
                 textTransform: "none",
-                "&:hover": { borderColor: "#0F172A" },
+                "&:hover": {
+                  borderColor: "var(--layer_background)",
+                  backgroundColor: "rgba(0,0,0,0.04)",
+                },
               }}
             >
               Reset
@@ -458,7 +495,14 @@ function DetailConversation() {
         </Dialog>
 
         {/* Số lượng hội thoại */}
-        <Typography sx={{ mb: 2, fontSize: 18, fontWeight: "bold" }}>
+        <Typography
+          sx={{
+            mb: 2,
+            fontSize: 18,
+            fontWeight: "bold",
+            color: "var(--layer_background)",
+          }}
+        >
           Có {Object.keys(messagesBySession).length} hội thoại
         </Typography>
 

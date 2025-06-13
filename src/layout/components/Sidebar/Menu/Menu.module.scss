@@ -6,15 +6,14 @@
   align-items: center;
   border-radius: 15px;
   cursor: pointer;
+  color: rgba(255, 255, 255, 0.4) !important;
 
   &.active {
-    background-color: #171717;
-
     .title {
-      color: var(--c_aqua) !important;
+      color: rgba(255, 255, 255, 0.8) !important;
     }
-    svg{
-      color: var(--c_aqua) !important;
+    svg {
+      color: rgba(255, 255, 255, 0.8) !important;
     }
   }
 }
@@ -24,9 +23,9 @@
   align-items: center;
   cursor: pointer;
   display: flex;
-  color: var(--layer_background);
+  color: rgba(255, 255, 255, 0.4);
   margin-left: 15px;
 }
 .menu_item:hover {
-  background-color: #171717;
+  background: rgba(255, 255, 255, 0.1);
 }

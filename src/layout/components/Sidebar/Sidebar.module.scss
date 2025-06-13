@@ -1,7 +1,7 @@
 .wrapper {
   min-width: calc(var(--width_sibar));
   width: var(--width_sibar);
-  background: var(--bg_sidebar);
+  background: var(--b_liner);
   margin: 15px;
   border-radius: 8px;
   overflow: hidden;
@@ -20,7 +20,7 @@
   color: var(--layer_background) !important;
 }
 .icon_menu {
-  color: var(--bg_write_chat) !important;
+  color: var(--layer_background) !important;
   font-size: 20px !important;
   margin-right: -10px !important;
 }

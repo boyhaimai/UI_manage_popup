@@ -117,7 +117,7 @@ export default function CopyCode() {
               sx={{ fontSize: 16 }}
             >
               Sao chép mã này và đặt trước thẻ &lt;/body&gt; trên mọi trang của
-              trang web của bạn. Sau khi thêm mã, nhấn "Kế tiếp" để xác minh.
+              trang web của bạn. Sau khi thêm mã, nhấn "Kế tiếp" để tiếp tục.
             </Typography>
 
             {error && (
@@ -246,26 +246,14 @@ export default function CopyCode() {
               onClick={() => navigate("/customize_ui")}
             >
               Trở lại
-            </Button>
-            <Button
-              variant="contained"
-              sx={{
-                fontSize: 14,
-                textTransform: "inherit",
-                background: "transparent",
-                color: "#000000",
-              }}
-              onClick={() => navigate("/certificate_website")}
-            >
-              Bỏ qua
-            </Button>
+            </Button>           
           </Box>
           <Box sx={{ marginTop: "-10px", marginRight: "92px" }}>
             <Button
               variant="contained"
               color="success"
               sx={{ fontSize: 14, textTransform: "inherit" }}
-              onClick={() => navigate("/certificate_website")}
+              onClick={() => navigate("/manage_page")} // Đã thay đổi từ /certificate_website sang /manage_page
             >
               Kế tiếp
             </Button>

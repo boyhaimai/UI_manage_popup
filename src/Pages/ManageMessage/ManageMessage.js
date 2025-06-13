@@ -76,7 +76,9 @@ export default function ChatUIClone() {
         if (data.success) {
           setActiveChats(data.activeChats || []);
         } else {
-          throw new Error(data.message || "Không thể lấy danh sách active chats.");
+          throw new Error(
+            data.message || "Không thể lấy danh sách active chats."
+          );
         }
       } catch (err) {
         console.error("Lỗi khi lấy active chats:", err);
@@ -273,13 +275,18 @@ export default function ChatUIClone() {
         flexDirection="column"
         height="100%"
         fontFamily="Roboto, sans-serif"
+        sx={{background: "var(--c_white)", margin: "3px"}}
       >
-        <Box display="flex" flex={1} minHeight={0} mt={6}>
+        <Box
+          display="flex"
+          flex={1}
+          minHeight={0}
+          mt={6}
+        >
           <Box
             flex={1}
             display="flex"
             flexDirection="column"
-            p={2}
             minHeight={0}
           >
             <Box
@@ -290,6 +297,7 @@ export default function ChatUIClone() {
               bgcolor="#f5f5f5"
               fontWeight="bold"
               borderBottom="1px solid #ccc"
+              p={2}
             >
               <Box
                 className={cx("title_active")}
@@ -391,7 +399,11 @@ export default function ChatUIClone() {
                 </Box>
               ))
             ) : (
-              <Typography align="center" color="textSecondary" sx={{ mt: 2, fontSize: 16 }}>
+              <Typography
+                align="center"
+                color="textSecondary"
+                sx={{ mt: 2, fontSize: 16 }}
+              >
                 Không có cuộc trò chuyện nào đang hoạt động.
               </Typography>
             )}

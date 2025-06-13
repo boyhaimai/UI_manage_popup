@@ -7,10 +7,11 @@
   overflow: hidden;
   overflow-y: auto;
   position: relative;
+  background: var(--b_liner);
 }
 .title_header {
   border-bottom: 1px solid #d9dbe4 !important;
-  background-color: #0F172A !important;
+  background:  var(--b_liner) !important;
   width: 100%;
   line-height: 25px;
   z-index: 999;

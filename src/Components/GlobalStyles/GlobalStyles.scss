@@ -45,6 +45,7 @@
   --c_red_light: rgb(254, 44, 85);
   --c_aqua: #10e6d4;
   --c_letter: #545454;
+  --c_letter_sidebar: rgba(255, 255, 255, 0.8);
 
   //color mb
 
@@ -57,8 +58,8 @@
   // font
   --lato_font: "Lato", sans-serif;
 
-  // --b_liner: linear-gradient(135deg, #fffbd5, #b20a2c);
-  // --b_liner_2: linear-gradient(to bottom, #afc8fd, #fafcff);
+  --b_liner: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  // --b_liner_2: linear-gradient(135deg, #667eea 0%, #764ba2 100%)
 }
 
 [data-theme="dark"] {

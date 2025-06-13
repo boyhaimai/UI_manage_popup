@@ -31,7 +31,14 @@ import classNames from "classnames/bind";
 import styles from "./ManagePage.module.scss";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpirationContext";
 
 const cx = classNames.bind(styles);
@@ -293,32 +300,58 @@ function ManagePage() {
             sx={{
               fontSize: "14px",
               textTransform: "none",
-              borderColor: "#0F172A",
-              color: "#0F172A",
+              borderColor: "var(--layer_background)",
+              color: "var(--layer_background)",
               height: 40,
               px: 2,
               "&:hover": {
-                borderColor: "#1e293b",
-                backgroundColor: "#f8f9fa",
+                borderColor: "var(--layer_background) !important",
+                backgroundColor: "transparent",
+              },
+              "&.Mui-focused": {
+                borderColor: "var(--layer_background)",
+              },
+              "&:focus": {
+                borderColor: "var(--layer_background)",
               },
             }}
           >
             Thêm Website
           </Button>
+
           <FormControl variant="outlined" size="small" sx={{ minWidth: 200 }}>
-            <InputLabel sx={{ fontSize: "14px" }}>Website</InputLabel>
+            <InputLabel
+              sx={{
+                fontSize: "14px",
+                color: "var(--layer_background) !important",
+              }}
+            >
+              Website
+            </InputLabel>
             <Select
               value={selectedWebsite}
               onChange={handleWebsiteChange}
               label="Website"
               sx={{
                 fontSize: "14px",
+                color: "var(--layer_background)",
                 "& .MuiSelect-select": { py: 1.5 },
-                whiteSpace: " nowrap",
+                whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 display: "block",
                 maxWidth: "100%",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "var(--layer_background) !important",
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "var(--layer_background)",
+                  color: "var(--layer_background) !important",
+                },
+                "& .MuiSelect-icon": {
+                  color: "var(--layer_background)",
+                  right: "-2px",
+                },
               }}
               disabled={loadingWebsite}
             >
@@ -326,7 +359,14 @@ function ManagePage() {
                 <MenuItem
                   key={w.domain}
                   value={w.domain}
-                  sx={{ fontSize: "14px" }}
+                  sx={{
+                    fontSize: "14px",
+                    color: "#000",
+                    backgroundColor: "#fff",
+                    "&:hover": {
+                      backgroundColor: "#f1f1f1",
+                    },
+                  }}
                 >
                   {w.domain}
                 </MenuItem>
@@ -369,18 +409,20 @@ function ManagePage() {
                   <Typography fontWeight="bold" fontSize={16} mb={2}>
                     Lượt truy cập trực tuyến
                   </Typography>
-                  <LineChart width={550} height={300} data={data}>
-                    <Line
-                      type="monotone"
-                      dataKey="value"
-                      stroke="#0abfbc"
-                      strokeWidth={2}
-                    />
-                    <CartesianGrid stroke="#ccc" />
-                    <XAxis dataKey="name" style={{ fontSize: 14 }} />
-                    <YAxis style={{ fontSize: 14 }} />
-                    <Tooltip contentStyle={{ fontSize: 14 }} />
-                  </LineChart>
+                  <ResponsiveContainer sx={{ width: "100%" }} height={300}>
+                    <LineChart data={data}>
+                      <Line
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#0abfbc"
+                        strokeWidth={2}
+                      />
+                      <CartesianGrid stroke="#ccc" />
+                      <XAxis dataKey="name" style={{ fontSize: 14 }} />
+                      <YAxis style={{ fontSize: 14 }} />
+                      <Tooltip contentStyle={{ fontSize: 14 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </Paper>
 
                 <Grid

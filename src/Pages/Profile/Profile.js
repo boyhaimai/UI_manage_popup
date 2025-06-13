@@ -135,6 +135,37 @@ function Profile() {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const handleUploadAvatar = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+    formData.append("type", "admin");
+    formData.append("phoneNumber", adminInfo.phoneNumber); // để server xóa ảnh cũ
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/upload-image`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.success && response.data.path) {
+        setAdminInfo((prev) => ({ ...prev, avatar: response.data.path }));
+      }
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: "Lỗi khi upload ảnh.",
+        severity: "error",
+      });
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
     if (!form.currentPassword) {
@@ -216,9 +247,14 @@ function Profile() {
     if (!adminInfo.name || adminInfo.name.trim().length < 2) {
       newErrors.name = "Tên phải có ít nhất 2 ký tự.";
     }
-    if (adminInfo.avatar && !isValidImageUrl(adminInfo.avatar)) {
+    if (
+      adminInfo.avatar &&
+      !adminInfo.avatar.startsWith("/uploads_admins") &&
+      !isValidImageUrl(adminInfo.avatar)
+    ) {
       newErrors.avatar = "URL ảnh không hợp lệ.";
     }
+
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
@@ -290,22 +326,32 @@ function Profile() {
           variant="contained"
           onClick={handleSaveAdminInfo}
           sx={{
-            bgcolor: "#0F172A",
-            color: "#fff",
+            bgcolor: "var(--c_white)",
+            color: "var(--c_letter)",
             fontSize: 13,
             textTransform: "none",
             px: 3,
             py: 1,
             "&:hover": { bgcolor: "#1e293b" },
             borderRadius: "8px",
+            fontWeight: "bold",
           }}
-          disabled={!!avatarError} // Removed 'uploading' from disabled prop
+          disabled={!!avatarError}
         >
           Lưu
         </Button>
       </Box>
 
-      <Box p={{ xs: 2, md: 4 }} mt={1}>
+      <Box
+        p={{ xs: 2, md: 4 }}
+        mt={1}
+        sx={{
+          bgcolor: "#fff",
+          height: "calc(100vh - 3px)",
+          marginLeft: "3px",
+          marginRight: "3px",
+        }}
+      >
         <Typography sx={{ fontSize: 16, fontWeight: "bold", mb: 3 }}>
           Thông tin cơ bản
         </Typography>
@@ -338,19 +384,49 @@ function Profile() {
                 >
                   {adminInfo.name}
                 </Box>
-                <Avatar
-                  src={previewAvatar}
-                  alt={adminInfo.name}
-                  sx={{ width: 48, height: 48, fontSize: 40 }}
-                  imgProps={{
-                    onLoad: () => setImageLoaded(true),
-                    onError: () => setImageLoaded(false),
-                  }}
-                >
-                  {!previewAvatar || !imageLoaded
-                    ? adminInfo.name?.charAt(0)?.toUpperCase()
-                    : null}
-                </Avatar>
+                <label htmlFor="upload-avatar">
+                  <Avatar
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      fontSize: 40,
+                      cursor: "pointer",
+                      bgcolor: "#e0e0e0", // hoặc "transparent"
+                    }}
+                  >
+                    {previewAvatar && (
+                      <img
+                        src={previewAvatar}
+                        alt="avatar"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                        onLoad={() => setImageLoaded(true)}
+                        onError={() => {
+                          setImageLoaded(false);
+                          setPreviewAvatar("");
+                        }}
+                      />
+                    )}
+                  </Avatar>
+                </label>
+
+                <input
+                  id="upload-avatar"
+                  hidden
+                  accept="image/*"
+                  type="file"
+                  onChange={handleUploadAvatar}
+                />
+                <input
+                  id="upload-avatar"
+                  hidden
+                  accept="image/*"
+                  type="file"
+                  onChange={handleUploadAvatar}
+                />
               </Box>
 
               <Box
