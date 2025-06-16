@@ -24,7 +24,7 @@ export default function CopyCode() {
         );
         if (response.data.success && response.data.config_id) {
           const configId = response.data.config_id;
-          const script = `<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v8@main/dist/model_admin_just_chat.js" data-server-url="https://ai.bang.vawayai.com:5000" data-id-config="${configId}" defer></script>`;
+          const script = `<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v10@main/dist/model_admin_just_chat.js" data-server-url="https://ai.bang.vawayai.com:5000" data-id-config="${configId}" defer></script>`;
           setScriptCode(script);
         } else {
           setError("Không tìm thấy cấu hình. Vui lòng chọn website.");
