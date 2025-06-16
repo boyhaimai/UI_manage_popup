@@ -122,36 +122,42 @@ function SettingPage() {
   const fetchConfigAndStats = async () => {
     try {
       setFetchLoading(true);
+
+      // 1️. Lấy danh sách website của admin
       const websiteResponse = await axios.get(`${API_BASE_URL}/get-websites`, {
         withCredentials: true,
       });
-      if (websiteResponse.data.success && websiteResponse.data.websites) {
-        setWebsites(websiteResponse.data.websites);
-      } else {
+      if (!websiteResponse.data.success || !websiteResponse.data.websites) {
         setError("Không tìm thấy danh sách website.");
         return;
       }
+      setWebsites(websiteResponse.data.websites);
 
+      // 2️. Lấy config_id hiện đang chọn
       const configResponse = await axios.get(
         `${API_BASE_URL}/get-selected-config`,
-        { withCredentials: true }
-      );
-      if (configResponse.data.success && configResponse.data.config_id) {
-        setIdConfig(configResponse.data.config_id);
-        const selectedSite = websiteResponse.data.websites.find(
-          (w) => w.config_id === configResponse.data.config_id
-        );
-        if (selectedSite) {
-          setSelectedWebsite(selectedSite.domain);
-          setCurrentDomain(selectedSite.domain);
+        {
+          withCredentials: true,
         }
-      } else {
+      );
+      if (!configResponse.data.success || !configResponse.data.config_id) {
         setError("Không tìm thấy config_id. Vui lòng chọn website.");
         return;
       }
+      const curConfigId = configResponse.data.config_id;
+      setIdConfig(curConfigId);
 
+      const selectedSite = websiteResponse.data.websites.find(
+        (w) => w.config_id === curConfigId
+      );
+      if (selectedSite) {
+        setSelectedWebsite(selectedSite.domain);
+        setCurrentDomain(selectedSite.domain);
+      }
+
+      // 3️. Lấy chi tiết cấu hình
       const configDataResponse = await axios.get(
-        `${API_BASE_URL}/get-config-by-id?id_config=${configResponse.data.config_id}`,
+        `${API_BASE_URL}/get-config-by-id?id_config=${curConfigId}`,
         { withCredentials: true }
       );
       if (configDataResponse.data) {
@@ -165,25 +171,20 @@ function SettingPage() {
         setError("Không thể tải cấu hình từ server.");
       }
 
+      // 4️. 🔑 LẤY THỐNG KÊ – CHỈNH LẠI: dùng ?config_id=...
       const statsResponse = await axios.get(
-        `${API_BASE_URL}/get-stats?domain=${encodeURIComponent(
-          websiteResponse.data.websites.find(
-            (w) => w.config_id === configResponse.data.config_id
-          ).domain
-        )}`,
+        `${API_BASE_URL}/get-stats?config_id=${curConfigId}`,
         { withCredentials: true }
       );
       if (statsResponse.data.success) {
         setStats(statsResponse.data.stats);
       } else {
-        setError("Không thể lấy thống kê cho domain này.");
+        setError("Không thể lấy thống kê cho config_id này.");
       }
     } catch (err) {
       console.error("Fetch config/stats error:", err);
       setError(err.response?.data?.message || "Không thể kết nối đến server.");
-      if (err.response?.status === 401) {
-        triggerTokenExpiration();
-      }
+      if (err.response?.status === 401) triggerTokenExpiration();
     } finally {
       setFetchLoading(false);
       setLoadingWebsite(false);
@@ -562,7 +563,7 @@ function SettingPage() {
                           fontWeight: "bold",
                           overflow: "hidden",
                           cursor: "pointer", // 👈 để hiện tay chuột
-                          mb: 1
+                          mb: 1,
                         }}
                       >
                         <Avatar
