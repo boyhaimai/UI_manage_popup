@@ -657,6 +657,18 @@ function ManagePage() {
                           >
                             Thời gian
                           </TableCell>
+                          <TableCell
+                            sx={{
+                              fontWeight: "bold",
+                              fontSize: 13,
+                              backgroundColor: "#f5f5f5",
+                              position: "sticky",
+                              top: 0,
+                              zIndex: 1,
+                            }}
+                          >
+                            Website
+                          </TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -676,6 +688,9 @@ function ManagePage() {
                                 }
                               )}
                             </TableCell>
+                            <TableCell sx={{ fontSize: 12 }}>
+                              {visit.domain || visit.website || "-"}
+                            </TableCell>{" "}
                           </TableRow>
                         ))}
                       </TableBody>
