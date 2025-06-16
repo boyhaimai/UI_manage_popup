@@ -22,17 +22,26 @@ const cx = classNames.bind(styles);
 const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
 
 const presetColors = ["#1976d2", "#d32f2f", "#7b1fa2", "#03A84E"];
+const defaultConfig = {
+  themeColor: "#0abfbc",
+  textColor: "#ffffff",
+  title: "Trợ lý AI",
+  welcomeMessage: "Xin chào! Tôi là trợ lý AI. Tôi có thể giúp gì cho bạn?",
+  position: "bottom-right",
+  historyEnabled: "true",
+  serverUrl: "https://ai.bang.vawayai.com:5000",
+  webhookUrl: "https://bang.daokhaccu.top/webhook/save_history",
+  avatar: "",
+};
 
 export default function ChatWidgetSetupUI() {
-  const [color, setColor] = useState("#0abfbc");
-  const [name, setName] = useState("Trợ lý AI");
-  const [greeting, setGreeting] = useState(
-    "Xin chào! Tôi là trợ lý AI. Tôi có thể giúp gì cho bạn?"
-  );
-  const [logo, setLogo] = useState("");
+  const [color, setColor] = useState(defaultConfig.themeColor);
+  const [name, setName] = useState(defaultConfig.title);
+  const [greeting, setGreeting] = useState(defaultConfig.welcomeMessage);
+  const [logo, setLogo] = useState(defaultConfig.avatar);
   const [logoFile, setLogoFile] = useState(null);
   const [logoType, setLogoType] = useState(null);
-  const [textColor, setTextColor] = useState("#ffffff");
+  const [textColor, setTextColor] = useState(defaultConfig.textColor);
   const [configId, setConfigId] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -49,41 +58,39 @@ export default function ChatWidgetSetupUI() {
           `${API_BASE_URL}/get-selected-config`,
           { withCredentials: true }
         );
-        if (configResponse.data.success && configResponse.data.config_id) {
-          const id = configResponse.data.config_id;
-          setConfigId(id);
-
-          // Lấy cấu hình chi tiết
-          const configDetailResponse = await axios.get(
-            `${API_BASE_URL}/get-config-by-id?id_config=${id}`,
-            { withCredentials: true }
-          );
-          if (configDetailResponse.data) {
-            const config = configDetailResponse.data;
-            setColor(config.themeColor || "#0abfbc");
-            setTextColor(config.textColor || "#ffffff");
-            setName(config.title || "Trợ lý AI");
-            setGreeting(
-              config.welcomeMessage ||
-                "Xin chào! Tôi là trợ lý AI. Tôi có thể giúp gì cho bạn?"
-            );
-            if (config.avatar) {
-              // Nếu avatar là đường dẫn tương đối, thêm base URL
-              const avatarUrl = config.avatar.startsWith("http")
-                ? config.avatar
-                : `${API_BASE_URL}${config.avatar}`;
-              setLogo(avatarUrl);
-              setLogoType(config.avatar ? "url" : null);
-            }
-          }
-        } else {
+        let id = configResponse.data.config_id;
+        if (!configResponse.data.success || !id) {
+          // Nếu không có config_id, tạo mới hoặc chọn website
           setError("Không tìm thấy cấu hình. Vui lòng chọn website.");
           setTimeout(() => navigate("/select_website"), 2000);
+          return;
+        }
+        setConfigId(id);
+
+        // Lấy cấu hình chi tiết
+        const configDetailResponse = await axios.get(
+          `${API_BASE_URL}/get-config-by-id?id_config=${id}`,
+          { withCredentials: true }
+        );
+        if (configDetailResponse.data) {
+          const config = configDetailResponse.data;
+          setColor(config.themeColor || defaultConfig.themeColor);
+          setTextColor(config.textColor || defaultConfig.textColor);
+          setName(config.title || defaultConfig.title);
+          setGreeting(config.welcomeMessage || defaultConfig.welcomeMessage);
+          if (config.avatar) {
+            const avatarUrl = config.avatar.startsWith("http")
+              ? config.avatar
+              : `${API_BASE_URL}${config.avatar}`;
+            setLogo(avatarUrl);
+            setLogoType(config.avatar ? "url" : null);
+          }
         }
       } catch (err) {
         setError(
           err.response?.data?.message || "Không thể kết nối đến server."
         );
+        setTimeout(() => navigate("/select_website"), 2000);
       } finally {
         setLoading(false);
       }
@@ -111,41 +118,41 @@ export default function ChatWidgetSetupUI() {
   };
 
   const saveConfig = async (useDefault = false) => {
-    if (!configId) {
-      setError("Không tìm thấy ID cấu hình.");
-      return false;
-    }
-
     setError("");
     setSuccess("");
     setLoading(true);
 
     try {
       const formData = new FormData();
-      formData.append("id_config", configId);
-      formData.append("themeColor", useDefault ? "#0abfbc" : color);
-      formData.append("textColor", useDefault ? "#ffffff" : textColor);
-      formData.append("title", useDefault ? "Trợ lý AI" : name);
+      formData.append("id_config", configId || ""); // Gửi configId, có thể rỗng
+      formData.append(
+        "themeColor",
+        useDefault ? defaultConfig.themeColor : color
+      );
+      formData.append(
+        "textColor",
+        useDefault ? defaultConfig.textColor : textColor
+      );
+      formData.append("title", useDefault ? defaultConfig.title : name);
       formData.append(
         "welcomeMessage",
-        useDefault
-          ? "Xin chào! Tôi là trợ lý AI. Tôi có thể giúp gì cho bạn?"
-          : greeting
+        useDefault ? defaultConfig.welcomeMessage : greeting
       );
-      formData.append("position", "bottom-right");
-      formData.append("historyEnabled", "true");
-      formData.append("serverUrl", "https://ai.bang.vawayai.com:5000");
-      formData.append(
-        "webhookUrl",
-        "https://bang.daokhaccu.top/webhook/save_history"
-      );
+      formData.append("position", defaultConfig.position);
+      formData.append("historyEnabled", defaultConfig.historyEnabled);
+      formData.append("serverUrl", defaultConfig.serverUrl);
+      formData.append("webhookUrl", defaultConfig.webhookUrl);
 
       if (!useDefault) {
         if (logoType === "upload" && logoFile) {
           formData.append("avatar", logoFile);
         } else if (logoType === "url" && logo) {
           formData.append("avatar", logo);
+        } else {
+          formData.append("avatar", defaultConfig.avatar);
         }
+      } else {
+        formData.append("avatar", defaultConfig.avatar);
       }
 
       const response = await axios.post(
@@ -173,17 +180,23 @@ export default function ChatWidgetSetupUI() {
   };
 
   const handleSaveConfig = async () => {
-    const success = await saveConfig(false);
+    // Nếu chưa có configId hoặc chưa nhập gì, dùng mặc định
+    const useDefault =
+      !configId ||
+      (!logo &&
+        !logoFile &&
+        name === defaultConfig.title &&
+        greeting === defaultConfig.welcomeMessage &&
+        color === defaultConfig.themeColor &&
+        textColor === defaultConfig.textColor);
+    const success = await saveConfig(useDefault);
     if (success) {
       setTimeout(() => navigate("/copy_code"), 1000);
     }
   };
 
   const handleSkip = async () => {
-    if (!configId) {
-      setError("Không tìm thấy ID cấu hình.");
-      return;
-    }
+    // Luôn dùng cấu hình mặc định khi nhấn Bỏ qua
     const success = await saveConfig(true);
     if (success) {
       navigate("/copy_code");

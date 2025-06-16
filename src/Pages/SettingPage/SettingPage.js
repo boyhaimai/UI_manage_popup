@@ -109,7 +109,7 @@ function SettingPage() {
   const debouncedTextColor = useDebounce({ value: form.textColor, delay: 500 });
 
   const isValidImageUrl = (url) => {
-    if (!url) return false;
+    if (!url) return true; // Chấp nhận URL rỗng
     const imageExtensions = /\.(jpeg|jpg|png|gif|webp)$/i;
     try {
       const cleanUrl = new URL(url).pathname;
@@ -166,12 +166,13 @@ function SettingPage() {
           ...form,
           ...config,
           historyEnabled: config.historyEnabled ? "true" : "false",
+          avatar: config.avatar || "", // Đảm bảo avatar rỗng nếu không có
         });
       } else {
         setError("Không thể tải cấu hình từ server.");
       }
 
-      // 4️. 🔑 LẤY THỐNG KÊ – CHỈNH LẠI: dùng ?config_id=...
+      // 4️. Lấy thống kê
       const statsResponse = await axios.get(
         `${API_BASE_URL}/get-stats?config_id=${curConfigId}`,
         { withCredentials: true }
@@ -267,7 +268,7 @@ function SettingPage() {
     const formData = new FormData();
     formData.append("avatar", file);
     formData.append("type", "popup");
-    formData.append("id_config", form.id_config); // cần để server biết ảnh cũ
+    formData.append("id_config", form.id_config);
 
     try {
       const response = await axios.post(
@@ -279,9 +280,12 @@ function SettingPage() {
       );
       if (response.data.success && response.data.path) {
         setForm((prev) => ({ ...prev, avatar: response.data.path }));
+        setAvatarError("");
+        setAvatarFile(null);
       }
     } catch (err) {
       console.error("Lỗi khi upload ảnh:", err);
+      setAvatarError("Không thể tải ảnh lên server.");
     }
   };
 
@@ -320,11 +324,6 @@ function SettingPage() {
       return;
     }
 
-    if (avatarError) {
-      setError("Vui lòng nhập URL ảnh hợp lệ hoặc chọn file ảnh.");
-      return;
-    }
-
     if (!id_config) {
       setError("Không tìm thấy config_id. Vui lòng chọn website.");
       return;
@@ -346,7 +345,7 @@ function SettingPage() {
       if (avatarFile) {
         formData.append("avatar", avatarFile);
       } else {
-        formData.append("avatar", form.avatar);
+        formData.append("avatar", form.avatar || "");
       }
 
       const response = await axios.post(
@@ -405,7 +404,7 @@ function SettingPage() {
     <div className={cx("wrapper")} ref={wrapperRef}>
       <Box className={cx("title_header")} ref={headerRef}>
         <Box>
-          <div style={{ fontSize: "16px" }}>Cài đặt</div>
+          <div style={{ fontSize: "16px" }}>Cài đặt</div>
         </Box>
         <Box display="flex" gap={2}>
           <Button
@@ -486,12 +485,7 @@ function SettingPage() {
               type="submit"
               variant="contained"
               startIcon={<Save />}
-              disabled={
-                fetchLoading ||
-                !!colorError ||
-                !!textColorError ||
-                !!avatarError
-              }
+              disabled={fetchLoading || !!colorError || !!textColorError}
               onClick={handleSubmit}
               sx={{
                 fontSize: "14px",
@@ -562,7 +556,7 @@ function SettingPage() {
                           color: "white",
                           fontWeight: "bold",
                           overflow: "hidden",
-                          cursor: "pointer", // 👈 để hiện tay chuột
+                          cursor: "pointer",
                           mb: 1,
                         }}
                       >
@@ -696,11 +690,11 @@ function SettingPage() {
                                 : "1px solid transparent",
                             borderRadius: "6px",
                             "&:hover": {
-                              bgcolor: color, // giữ nguyên màu
+                              bgcolor: color,
                               border:
                                 form.themeColor === color
                                   ? "3px solid var(--c_letter)"
-                                  : "1px solid tr ansparent", // giữ viền
+                                  : "1px solid transparent",
                             },
                           }}
                         />
@@ -769,14 +763,14 @@ function SettingPage() {
                           border:
                             form.textColor === color
                               ? "2px solid #00897b"
-                              : "1px solid var(--c_letter)", // 👈 Border đen mặc định
+                              : "1px solid var(--c_letter)",
                           borderRadius: "6px",
                           "&:hover": {
-                            bgcolor: color, // 👈 Không đổi màu
+                            bgcolor: color,
                             border:
                               form.textColor === color
                                 ? "2px solid #00897b"
-                                : "1px solid var(--c_letter)", // 👈 Giữ border
+                                : "1px solid var(--c_letter)",
                           },
                         }}
                       />
