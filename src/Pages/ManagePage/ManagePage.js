@@ -271,9 +271,22 @@ function ManagePage() {
     );
   };
 
-  const todayVisits = (stats.visitHistory || [])
-    .filter((visit) => isToday(visit.timestamp))
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  const uniqueVisits = [];
+  const seenSessionIds = new Set();
+
+  (stats.visitHistory || []).forEach((visit) => {
+    if (
+      isToday(visit.timestamp) &&
+      !seenSessionIds.has(visit.chat_session_id)
+    ) {
+      seenSessionIds.add(visit.chat_session_id);
+      uniqueVisits.push(visit);
+    }
+  });
+
+  const todayVisits = uniqueVisits.sort(
+    (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+  );
 
   const paginatedVisits = todayVisits.slice(
     (currentPage - 1) * itemsPerPage,
