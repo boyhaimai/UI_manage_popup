@@ -139,7 +139,7 @@ function DetailConversation() {
           inserted_at: new Date(msg.timestamp).toLocaleString(),
           message: msg.message,
           sender: msg.sender,
-          domain: domain,
+          domain: msg.domain || domain,
         });
       });
 
