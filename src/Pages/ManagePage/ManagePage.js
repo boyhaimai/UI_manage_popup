@@ -80,7 +80,7 @@ function ManagePage() {
   const data =
     stats.dailyVisitors?.map((item) => {
       const date = new Date(item.date);
-      const day = date.getDay(); // 0 - CN, 1 - T2, ...
+      const day = date.getDay();
       return {
         name: dayNames[day],
         value: item.count,
@@ -113,29 +113,26 @@ function ManagePage() {
           setSelectedWebsite(selectedSite.domain);
           setCurrentDomain(selectedSite.domain);
         }
+
+        const statsResponse = await axios.get(
+          `${API_BASE_URL}/get-stats?config_id=${configResponse.data.config_id}`,
+          { withCredentials: true }
+        );
+
+        if (statsResponse.data.success) {
+          setStats(statsResponse.data.stats);
+        } else {
+          setError("Không thể lấy thống kê cho config_id này.");
+        }
       } else {
         setError("Không tìm thấy config_id. Vui lòng chọn website.");
         return;
-      }
-
-      const statsResponse = await axios.get(
-        `${API_BASE_URL}/get-stats?domain=${encodeURIComponent(
-          websiteResponse.data.websites.find(
-            (w) => w.config_id === configResponse.data.config_id
-          ).domain
-        )}`,
-        { withCredentials: true }
-      );
-      if (statsResponse.data.success) {
-        setStats(statsResponse.data.stats);
-      } else {
-        setError("Không thể lấy thống kê cho domain này.");
       }
     } catch (err) {
       console.error("Fetch config/stats error:", err);
       setError(err.response?.data?.message || "Không thể kết nối đến server.");
       if (err.response?.status === 401) {
-        triggerTokenExpiration(); // Kích hoạt thông báo khi lỗi 401
+        triggerTokenExpiration();
       }
     } finally {
       setFetchLoading(false);
@@ -276,7 +273,7 @@ function ManagePage() {
 
   const todayVisits = (stats.visitHistory || [])
     .filter((visit) => isToday(visit.timestamp))
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // mới nhất trước
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   const paginatedVisits = todayVisits.slice(
     (currentPage - 1) * itemsPerPage,
