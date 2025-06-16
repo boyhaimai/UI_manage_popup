@@ -5,7 +5,6 @@ const routes = {
   addWebsite: "/add_website",
   customizeUi: "/customize_ui",
   copyCode: "/copy_code",
-  certificateWebsite: "/certificate_website",
   message: "/message",
   managePage: "/manage_page",
   DetailConversation: "/detail_conversation",

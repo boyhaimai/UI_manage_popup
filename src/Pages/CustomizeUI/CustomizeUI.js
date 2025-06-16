@@ -11,7 +11,7 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import { Send } from "@mui/icons-material";
+import { Send, UploadFile } from "@mui/icons-material";
 import classNames from "classnames/bind";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -281,7 +281,7 @@ export default function ChatWidgetSetupUI() {
                 <Box flex={1}>
                   <Box my={2}>
                     <Typography fontWeight="bold" fontSize={16} mb={1}>
-                      Ảnh đại diện
+                      Ảnh widget
                     </Typography>
                     <Box
                       width={64}
@@ -293,25 +293,22 @@ export default function ChatWidgetSetupUI() {
                       borderRadius={1}
                       position="relative"
                       sx={{ cursor: "pointer" }}
-                      // onClick={() =>
-                      //   document.getElementById("logo-upload").click()
-                      // }
-                    >
-                      {
-                        logo && (
-                          <Avatar src={logo} sx={{ width: 64, height: 64 }} />
-                        )
-                        // : (
-                        //   <UploadFile />
-                        // )
+                      onClick={() =>
+                        document.getElementById("logo-upload").click()
                       }
-                      {/* <input
+                    >
+                      {logo ? (
+                        <Avatar src={logo} sx={{ width: 64, height: 64 }} />
+                      ) : (
+                        <UploadFile />
+                      )}
+                      <input
                         id="logo-upload"
                         type="file"
                         accept="image/*"
                         hidden
                         onChange={handleImageChange}
-                      /> */}
+                      />
                     </Box>
 
                     <TextField

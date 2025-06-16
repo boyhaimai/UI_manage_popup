@@ -4,7 +4,6 @@ import RegisterAdmin from "~/Pages/Register_admin";
 import AddWebsite from "~/Pages/AddWeb";
 import CustomizeUI from "~/Pages/CustomizeUI/CustomizeUI";
 import CopyCode from "~/Pages/CopyCode";
-import CertificateWebsite from "~/Pages/CertificateWebsite";
 import ManagePage from "~/Pages/ManagePage/ManagePage";
 import Message from "~/Pages/ManageMessage/ManageMessage";
 import DetailConversation from "~/Pages/DetailConversation/DetailConversation";
@@ -21,11 +20,6 @@ const publicRoutes = [
   { path: config.routes.addWebsite, component: AddWebsite, layout: null },
   { path: config.routes.customizeUi, component: CustomizeUI, layout: null },
   { path: config.routes.copyCode, component: CopyCode, layout: null },
-  {
-    path: config.routes.certificateWebsite,
-    component: CertificateWebsite,
-    layout: null,
-  },
   { path: config.routes.managePage, component: ManagePage },
   { path: config.routes.message, component: Message },
   { path: config.routes.DetailConversation, component: DetailConversation },
