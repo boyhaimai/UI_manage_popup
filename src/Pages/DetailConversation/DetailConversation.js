@@ -80,8 +80,14 @@ function DetailConversation() {
         withCredentials: true,
       });
       if (websiteResponse.data.success && websiteResponse.data.websites) {
-        // Gỡ bỏ domain cố định
-        setDomain(""); // hoặc bỏ hoàn toàn cũng được nếu không còn dùng
+        const website = websiteResponse.data.websites.find(
+          (w) => w.config_id === configResponse.data.config_id
+        );
+        if (website) {
+          setDomain(website.domain);
+        } else {
+          setError("Không tìm thấy website cho config_id này.");
+        }
       } else {
         setError("Không thể lấy danh sách website.");
       }
@@ -97,7 +103,7 @@ function DetailConversation() {
 
   // Lấy lịch sử hội thoại
   const fetchHistory = async () => {
-    if (!idConfig) return;
+    if (!idConfig || !domain) return;
     try {
       setFetching(true);
       const historyResponse = await axios.get(
@@ -133,7 +139,7 @@ function DetailConversation() {
           inserted_at: new Date(msg.timestamp).toLocaleString(),
           message: msg.message,
           sender: msg.sender,
-          domain: msg.domain,
+          domain: domain,
         });
       });
 
@@ -166,12 +172,13 @@ function DetailConversation() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Gọi lịch sử khi có idConfig và domain
   useEffect(() => {
-    if (idConfig) {
+    if (idConfig && domain) {
       fetchHistory();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idConfig, page, search, year, month, day]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idConfig, domain, page, search, year, month, day]);
 
   useEffect(() => {
     const resizeHeader = () => {
