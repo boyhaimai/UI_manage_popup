@@ -97,7 +97,7 @@ function DetailConversation() {
 
   // Lấy lịch sử hội thoại
   const fetchHistory = async () => {
-    if (!idConfig || !domain) return;
+    if (!idConfig) return;
     try {
       setFetching(true);
       const historyResponse = await axios.get(
