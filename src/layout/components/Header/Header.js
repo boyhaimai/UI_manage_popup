@@ -22,6 +22,7 @@ const Header = ({ open, onClose }) => {
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const messagesEndRef = useRef();
 
   const scrollToBottom = () => {
@@ -31,6 +32,61 @@ const Header = ({ open, onClose }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
+
+  useEffect(() => {
+    verifyToken(); // Không cần truyền token nữa
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const verifyToken = async () => {
+    try {
+      const response = await fetch("https://ai.bang.vawayai.com:5000/get-admin-info", {
+        credentials: "include", // ✅ gửi cookie authToken
+      });
+      if (response.ok) {
+        setIsAdmin(true);
+        fetchAdminMessageHistory();
+      } else {
+        setIsAdmin(false);
+      }
+    } catch (error) {
+      console.error("Lỗi xác minh token:", error);
+      setIsAdmin(false);
+    }
+  };
+
+  const fetchAdminMessageHistory = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(
+        "https://ai.bang.vawayai.com:5000/get-admin-message-history",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.messages.length > 0) {
+          setMessages([
+            { sender: "bot", text: "Xin chào! Tôi có thể giúp gì cho bạn?" },
+            ...data.messages.map((msg) => ({
+              text: msg.message,
+              sender: "admin",
+              timestamp: msg.timestamp,
+              id: msg.chatId || generateMessageId(),
+            })),
+          ]);
+        }
+      } else {
+        console.error("Lỗi lấy lịch sử admin:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Lỗi kết nối khi lấy lịch sử admin:", error);
+    }
+  };
 
   const generateMessageId = () => {
     return `msg_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
@@ -67,33 +123,61 @@ const Header = ({ open, onClose }) => {
     if (input.trim() === "") return;
 
     const messageId = generateMessageId();
-    addMessage(input, "user", null, messageId);
+    addMessage(input, isAdmin ? "admin" : "user", null, messageId);
     setInput("");
 
     try {
       showTypingIndicator();
-      const response = await fetch("https://bang.daokhaccu.top/webhook/save_history", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: input,
-          timestamp: Date.now(),
-          origin: window.location.origin,
-          userAgent: navigator.userAgent,
-          sessionId: getSessionId(),
-          domain: window.location.hostname,
-        }),
-      });
 
-      console.log("Webhook response status:", response.status);
+      // Gọi webhook để lấy phản hồi bot
+      const webhookResponse = await fetch(
+        "https://bang.daokhaccu.top/webhook/save_history",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(isAdmin && {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            }),
+          },
+          body: JSON.stringify({
+            message: input,
+            timestamp: Date.now(),
+            origin: window.location.origin,
+            userAgent: navigator.userAgent,
+            sessionId: getSessionId(),
+            domain: window.location.hostname,
+            sender: isAdmin ? "admin" : "user",
+          }),
+        }
+      );
 
-      if (response.ok) {
+      // Gọi API lưu lịch sử trên server local
+      const saveHistoryResponse = await fetch(
+        "https://ai.bang.vawayai.com:5000/save-history",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include", // ✅ để browser tự gửi cookie authToken
+          body: JSON.stringify({
+            userId: getSessionId(),
+            sender: isAdmin ? "admin" : "user",
+            message: input,
+            timestamp: Date.now(),
+            id: messageId,
+            domain: window.location.hostname,
+          }),
+        }
+      );
+
+      // Xử lý phản hồi webhook
+      if (webhookResponse.ok) {
         let data;
         try {
-          data = await response.json(); // Parse JSON trực tiếp
-          if (data && data.response) { // Sử dụng 'response' thay vì 'reply'
+          data = await webhookResponse.json();
+          if (data && data.response) {
             const botMessageId = generateMessageId();
             setTimeout(() => {
               removeTypingIndicator();
@@ -102,33 +186,56 @@ const Header = ({ open, onClose }) => {
           } else {
             setTimeout(() => {
               removeTypingIndicator();
-              addMessage("Xin lỗi, tôi chưa nhận được phản hồi.", "bot", null, generateMessageId());
+              addMessage(
+                "Xin lỗi, tôi chưa nhận được phản hồi.",
+                "bot",
+                null,
+                generateMessageId()
+              );
             }, 2000);
           }
         } catch (jsonError) {
           console.error("Lỗi parse JSON:", jsonError);
           setTimeout(() => {
             removeTypingIndicator();
-            addMessage("Xin lỗi, phản hồi không hợp lệ từ server.", "bot", null, generateMessageId());
+            addMessage(
+              "Xin lỗi, phản hồi không hợp lệ từ server.",
+              "bot",
+              null,
+              generateMessageId()
+            );
           }, 2000);
         }
       } else {
-        console.error("Lỗi từ server:", response.statusText);
+        console.error("Lỗi từ webhook:", webhookResponse.statusText);
         setTimeout(() => {
           removeTypingIndicator();
-          addMessage(`Lỗi: ${response.status} - ${response.statusText}`, "bot", null, generateMessageId());
+          addMessage(
+            `Lỗi: ${webhookResponse.status} - ${webhookResponse.statusText}`,
+            "bot",
+            null,
+            generateMessageId()
+          );
         }, 2000);
       }
+
+      // Kiểm tra phản hồi lưu lịch sử
+      if (!saveHistoryResponse.ok) {
+        console.error("Lỗi lưu lịch sử:", saveHistoryResponse.statusText);
+      }
     } catch (error) {
-      console.error("Lỗi kết nối webhook:", error);
+      console.error("Lỗi kết nối:", error);
       setTimeout(() => {
         removeTypingIndicator();
-        addMessage("Lỗi gửi tin nhắn. Vui lòng thử lại.", "bot", null, generateMessageId());
+        addMessage(
+          "Lỗi gửi tin nhắn. Vui lòng thử lại.",
+          "bot",
+          null,
+          generateMessageId()
+        );
       }, 2000);
     }
   };
-
-  console.log("Header đang hiển thị:", open);
 
   return (
     <div className={cx("wrapper")}>
@@ -189,7 +296,8 @@ const Header = ({ open, onClose }) => {
               sx={{
                 mb: 1,
                 display: "flex",
-                justifyContent: msg.sender === "user" ? "flex-end" : "flex-start",
+                justifyContent:
+                  msg.sender === "bot" ? "flex-start" : "flex-end",
               }}
             >
               <Box
@@ -199,10 +307,10 @@ const Header = ({ open, onClose }) => {
                   borderRadius: 2,
                   maxWidth: "70%",
                   bgcolor:
-                    msg.sender === "user"
-                      ? "#e0e0e0"
-                      : "var(--theme-color, #0abfbc)",
-                  color: msg.sender === "user" ? "#000" : "#fff",
+                    msg.sender === "bot"
+                      ? "var(--theme-color, #0abfbc)"
+                      : "#e0e0e0", // Admin và user cùng màu #e0e0e0
+                  color: msg.sender === "bot" ? "#fff" : "#000",
                   fontSize: 14,
                 }}
               >
@@ -218,12 +326,34 @@ const Header = ({ open, onClose }) => {
                 justifyContent: "flex-start",
               }}
             >
-              <Box
-               className={cx('wrapper_typing')}                
-              >
-                <span style={{ width: 6, height: 6, background: "#fff", borderRadius: "50%", animation: "typing 1s infinite ease-in-out" }}></span>
-                <span style={{ width: 6, height: 6, background: "#fff", borderRadius: "50%", animation: "typing 1s infinite 0.2s ease-in-out" }}></span>
-                <span style={{ width: 6, height: 6, background: "#fff", borderRadius: "50%", animation: "typing 1s infinite 0.4s ease-in-out" }}></span>
+              <Box className={cx("wrapper_typing")}>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    background: "#fff",
+                    borderRadius: "50%",
+                    animation: "typing 1s infinite ease-in-out",
+                  }}
+                ></span>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    background: "#fff",
+                    borderRadius: "50%",
+                    animation: "typing 1s infinite 0.2s ease-in-out",
+                  }}
+                ></span>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    background: "#fff",
+                    borderRadius: "50%",
+                    animation: "typing 1s infinite 0.4s ease-in-out",
+                  }}
+                ></span>
               </Box>
             </Box>
           )}
