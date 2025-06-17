@@ -17,12 +17,9 @@ import styles from "./header.module.scss";
 const cx = classNames.bind(styles);
 
 const Header = ({ open, onClose }) => {
-  const [messages, setMessages] = useState([
-    { sender: "bot", text: "Xin chào! Tôi có thể giúp gì cho bạn?" },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const messagesEndRef = useRef();
 
   const scrollToBottom = () => {
@@ -34,59 +31,33 @@ const Header = ({ open, onClose }) => {
   }, [messages, isTyping]);
 
   useEffect(() => {
-    verifyToken(); // Không cần truyền token nữa
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const fetchMessages = async () => {
+      const sessionId = getSessionId();
+      const domain = window.location.hostname || "localhost";
 
-  const verifyToken = async () => {
-    try {
-      const response = await fetch("https://ai.bang.vawayai.com:5000/get-admin-info", {
-        credentials: "include", // ✅ gửi cookie authToken
-      });
-      if (response.ok) {
-        setIsAdmin(true);
-        fetchAdminMessageHistory();
-      } else {
-        setIsAdmin(false);
-      }
-    } catch (error) {
-      console.error("Lỗi xác minh token:", error);
-      setIsAdmin(false);
-    }
-  };
-
-  const fetchAdminMessageHistory = async () => {
-    try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch(
-        "https://ai.bang.vawayai.com:5000/get-admin-message-history",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.messages.length > 0) {
+      try {
+        const res = await fetch(
+          `https://ai.bang.vawayai.com:5000get-history-admin-page?domain=${domain}&userId=${sessionId}`
+        );
+        const data = await res.json();
+        if (data.success && Array.isArray(data.messages)) {
+          const restoredMessages = data.messages.map((msg) => ({
+            id: msg.id,
+            sender: msg.sender,
+            text: msg.message,
+            timestamp: msg.timestamp,
+          }));
           setMessages([
             { sender: "bot", text: "Xin chào! Tôi có thể giúp gì cho bạn?" },
-            ...data.messages.map((msg) => ({
-              text: msg.message,
-              sender: "admin",
-              timestamp: msg.timestamp,
-              id: msg.chatId || generateMessageId(),
-            })),
+            ...restoredMessages,
           ]);
         }
-      } else {
-        console.error("Lỗi lấy lịch sử admin:", response.statusText);
+      } catch (err) {
+        console.error("Lỗi khi tải lịch sử:", err);
       }
-    } catch (error) {
-      console.error("Lỗi kết nối khi lấy lịch sử admin:", error);
-    }
-  };
+    };
+    fetchMessages();
+  }, []);
 
   const generateMessageId = () => {
     return `msg_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
@@ -123,108 +94,79 @@ const Header = ({ open, onClose }) => {
     if (input.trim() === "") return;
 
     const messageId = generateMessageId();
-    addMessage(input, isAdmin ? "admin" : "user", null, messageId);
+    const botMessageId = generateMessageId();
+    const domain = window.location.hostname || "localhost";
+    const sessionId = getSessionId();
+
+    addMessage(input, "admin", null, messageId);
     setInput("");
 
     try {
       showTypingIndicator();
 
-      // Gọi webhook để lấy phản hồi bot
       const webhookResponse = await fetch(
         "https://bang.daokhaccu.top/webhook/save_history",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(isAdmin && {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            }),
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             message: input,
             timestamp: Date.now(),
             origin: window.location.origin,
             userAgent: navigator.userAgent,
-            sessionId: getSessionId(),
-            domain: window.location.hostname,
-            sender: isAdmin ? "admin" : "user",
+            sessionId,
+            domain,
+            phoneNumber: "admin",
           }),
         }
       );
 
-      // Gọi API lưu lịch sử trên server local
-      const saveHistoryResponse = await fetch(
-        "https://ai.bang.vawayai.com:5000/save-history",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include", // ✅ để browser tự gửi cookie authToken
-          body: JSON.stringify({
-            userId: getSessionId(),
-            sender: isAdmin ? "admin" : "user",
-            message: input,
-            timestamp: Date.now(),
-            id: messageId,
-            domain: window.location.hostname,
-          }),
-        }
-      );
-
-      // Xử lý phản hồi webhook
+      let botReply = "Xin lỗi, tôi chưa nhận được phản hồi.";
       if (webhookResponse.ok) {
-        let data;
         try {
-          data = await webhookResponse.json();
-          if (data && data.response) {
-            const botMessageId = generateMessageId();
-            setTimeout(() => {
-              removeTypingIndicator();
-              addMessage(data.response, "bot", null, botMessageId);
-            }, 2000);
-          } else {
-            setTimeout(() => {
-              removeTypingIndicator();
-              addMessage(
-                "Xin lỗi, tôi chưa nhận được phản hồi.",
-                "bot",
-                null,
-                generateMessageId()
-              );
-            }, 2000);
+          const data = await webhookResponse.json();
+          if (data?.response) {
+            botReply = data.response;
           }
-        } catch (jsonError) {
-          console.error("Lỗi parse JSON:", jsonError);
-          setTimeout(() => {
-            removeTypingIndicator();
-            addMessage(
-              "Xin lỗi, phản hồi không hợp lệ từ server.",
-              "bot",
-              null,
-              generateMessageId()
-            );
-          }, 2000);
+        } catch {
+          botReply = "Xin lỗi, phản hồi không hợp lệ từ server.";
         }
-      } else {
-        console.error("Lỗi từ webhook:", webhookResponse.statusText);
-        setTimeout(() => {
-          removeTypingIndicator();
-          addMessage(
-            `Lỗi: ${webhookResponse.status} - ${webhookResponse.statusText}`,
-            "bot",
-            null,
-            generateMessageId()
-          );
-        }, 2000);
       }
 
-      // Kiểm tra phản hồi lưu lịch sử
-      if (!saveHistoryResponse.ok) {
-        console.error("Lỗi lưu lịch sử:", saveHistoryResponse.statusText);
-      }
-    } catch (error) {
-      console.error("Lỗi kết nối:", error);
+      setTimeout(() => {
+        removeTypingIndicator();
+        addMessage(botReply, "bot", null, botMessageId);
+      }, 1500);
+
+      // Lưu lịch sử admin
+      await fetch("https://ai.bang.vawayai.com:5000save-history-admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: sessionId,
+          sender: "admin",
+          message: input,
+          timestamp: Date.now(),
+          id: messageId,
+          domain,
+        }),
+      });
+
+      // Lưu lịch sử bot
+      await fetch("https://ai.bang.vawayai.com:5000save-history-admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: sessionId,
+          sender: "bot",
+          message: botReply,
+          timestamp: Date.now(),
+          id: botMessageId,
+          domain,
+        }),
+      });
+    } catch (err) {
+      console.error("Lỗi khi gửi hoặc lưu:", err);
       setTimeout(() => {
         removeTypingIndicator();
         addMessage(
@@ -297,7 +239,7 @@ const Header = ({ open, onClose }) => {
                 mb: 1,
                 display: "flex",
                 justifyContent:
-                  msg.sender === "bot" ? "flex-start" : "flex-end",
+                  msg.sender === "admin" ? "flex-end" : "flex-start", // 👈 đổi từ 'user' → 'admin'
               }}
             >
               <Box
@@ -307,10 +249,10 @@ const Header = ({ open, onClose }) => {
                   borderRadius: 2,
                   maxWidth: "70%",
                   bgcolor:
-                    msg.sender === "bot"
-                      ? "var(--theme-color, #0abfbc)"
-                      : "#e0e0e0", // Admin và user cùng màu #e0e0e0
-                  color: msg.sender === "bot" ? "#fff" : "#000",
+                    msg.sender === "admin"
+                      ? "#e0e0e0" // 👈 admin (phải) có nền xám
+                      : "var(--theme-color, #0abfbc)", // 👈 bot (trái) có nền xanh
+                  color: msg.sender === "admin" ? "#000" : "#fff",
                   fontSize: 14,
                 }}
               >
@@ -318,6 +260,7 @@ const Header = ({ open, onClose }) => {
               </Box>
             </Box>
           ))}
+
           {isTyping && (
             <Box
               sx={{
