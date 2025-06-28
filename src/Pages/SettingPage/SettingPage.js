@@ -66,7 +66,8 @@ const fieldDescriptions = {
     "Nhập URL ảnh đại diện hoặc tải lên file ảnh (jpg, png, gif, webp) để hiển thị cho chatbot.",
   title:
     "Đặt tên cho trang hoặc chatbot (tối đa 50 ký tự) để nhận diện dễ dàng.",
-  historyEnabled: "Bật/tắt tính năng lưu lịch sử trò chuyện với người dùng.",
+  historyEnabled:
+    "Bật/tắt tính năng lưu lịch sử trò chuyện với người dùng. Khi bật, hệ thống sẽ lưu lại các cuộc trò chuyện để xem lại sau này.",
   currentDomain: "Tên miền hiện tại của website, không thể chỉnh sửa.",
   themeColor:
     "Chọn mã màu hex (ví dụ: #0abfbc) để tùy chỉnh màu nền của chatbot.",
@@ -81,6 +82,7 @@ const fieldDescriptions = {
   linkContact:
     "Nhập liên kết liên hệ (ví dụ: https://your-contact-page.com) để người dùng gửi yêu cầu.",
   position: "Chọn vị trí hiển thị của tiện ích chatbot trên trang web.",
+  code: "Mã nhúng để tích hợp chatbot vào website của bạn. Sao chép mã này và dán vào mã nguồn HTML của trang web để kích hoạt chatbot.",
 };
 
 function SettingPage() {
@@ -308,7 +310,7 @@ function SettingPage() {
     // Preview ngay trong form (dùng blob local)
     const previewUrl = URL.createObjectURL(croppedFile);
     setForm((prev) => ({ ...prev, avatar: previewUrl }));
-  };  
+  };
 
   const handlePositionChange = (value) => {
     setForm({ ...form, position: value });
@@ -611,8 +613,8 @@ function SettingPage() {
 
                   <Box sx={{ lineHeight: 1.5, mb: 2 }}>
                     <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                      <Image sx={{ mr: 1 }} />
-                      <Typography fontSize={13} fontWeight="bold">
+                      <Image sx={{ mr: 1, fontSize: 25 }} />
+                      <Typography fontSize={14} fontWeight="bold">
                         URL ảnh hoặc tải lên
                       </Typography>
                       <Tooltip title={fieldDescriptions.avatar} placement="top">
@@ -638,10 +640,21 @@ function SettingPage() {
 
                   <Box sx={{ mb: 2 }}>
                     <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                      <History sx={{ mr: 1, fontSize: 16 }} />
-                      <Typography fontSize={13} fontWeight="bold">
+                      <History sx={{ mr: 1, fontSize: 25 }} />
+                      <Typography fontSize={14} fontWeight="bold">
                         Lưu lịch sử
                       </Typography>
+                      <Tooltip
+                        title={fieldDescriptions.historyEnabled}
+                        placement="top"
+                      >
+                        <IconButton size="small" sx={{ ml: 1 }}>
+                          <HelpOutline
+                            sx={{ fontSize: "14px", marginLeft: "-10px" }}
+                            color="action"
+                          />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                     <Box
                       sx={{
@@ -664,8 +677,8 @@ function SettingPage() {
 
                   <Box sx={{ mb: 2 }}>
                     <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                      <Edit sx={{ mr: 1, fontSize: 16 }} />
-                      <Typography fontSize={13} fontWeight="bold">
+                      <Edit sx={{ mr: 1, fontSize: 25 }} />
+                      <Typography fontSize={14} fontWeight="bold">
                         Tên widget
                       </Typography>
                       <Tooltip title={fieldDescriptions.title} placement="top">
@@ -690,8 +703,8 @@ function SettingPage() {
 
                 <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                    <Link sx={{ mr: 1, fontSize: 16 }} />
-                    <Typography fontSize={13} fontWeight="bold">
+                    <Link sx={{ mr: 1, fontSize: 25 }} />
+                    <Typography fontSize={14} fontWeight="bold">
                       URL trang
                     </Typography>
                     <Tooltip
@@ -716,8 +729,8 @@ function SettingPage() {
                 </Box>
                 <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                    <Palette sx={{ mr: 1, fontSize: 16 }} />
-                    <Typography fontSize={13} fontWeight="bold">
+                    <Palette sx={{ mr: 1, fontSize: 25 }} />
+                    <Typography fontSize={14} fontWeight="bold">
                       Màu cơ bản
                     </Typography>
                     <Tooltip
@@ -805,8 +818,8 @@ function SettingPage() {
                 </Box>
                 <Box>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                    <FormatColorText sx={{ mr: 1, fontSize: 16 }} />
-                    <Typography fontSize={13} fontWeight="bold">
+                    <FormatColorText sx={{ mr: 1, fontSize: 25 }} />
+                    <Typography fontSize={14} fontWeight="bold">
                       Màu chữ
                     </Typography>
                     <Tooltip
@@ -904,10 +917,21 @@ function SettingPage() {
                   onMouseLeave={() => setIsHovered(false)}
                 >
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                    <Code sx={{ mr: 1, fontSize: 16 }} />
-                    <Typography fontSize={13} fontWeight="bold">
+                    <Code sx={{ mr: 1, fontSize: 25 }} />
+                    <Typography fontSize={14} fontWeight="bold">
                       Mã Nhúng
                     </Typography>
+                    <Tooltip
+                      title={fieldDescriptions.code}
+                      placement="top"
+                    >
+                      <IconButton size="small" sx={{ ml: 1 }}>
+                        <HelpOutline
+                          sx={{ fontSize: "14px", marginLeft: "-10px" }}
+                          color="action"
+                        />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                   <TextField
                     fullWidth
@@ -951,8 +975,8 @@ function SettingPage() {
                 </Box>
                 <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                    <Chat sx={{ mr: 1, fontSize: 16 }} />
-                    <Typography fontSize={13} fontWeight="bold">
+                    <Chat sx={{ mr: 1, fontSize: 25 }} />
+                    <Typography fontSize={14} fontWeight="bold">
                       Lời chào mừng
                     </Typography>
                     <Tooltip
@@ -978,8 +1002,8 @@ function SettingPage() {
                 </Box>
                 <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                    <Webhook sx={{ mr: 1, fontSize: 16 }} />
-                    <Typography fontSize={13} fontWeight="bold">
+                    <Webhook sx={{ mr: 1, fontSize: 25 }} />
+                    <Typography fontSize={14} fontWeight="bold">
                       Webhook URL
                     </Typography>
                     <Tooltip
@@ -1023,8 +1047,8 @@ function SettingPage() {
 
                 <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                    <ContactMail sx={{ mr: 1, fontSize: 16 }} />
-                    <Typography fontSize={13} fontWeight="bold">
+                    <ContactMail sx={{ mr: 1, fontSize: 25 }} />
+                    <Typography fontSize={14} fontWeight="bold">
                       Link liên hệ
                     </Typography>
                     <Tooltip
@@ -1050,8 +1074,8 @@ function SettingPage() {
                 </Box>
                 <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                    <Place sx={{ mr: 1, fontSize: 16 }} />
-                    <Typography fontSize={13} fontWeight="bold">
+                    <Place sx={{ mr: 1, fontSize: 25 }} />
+                    <Typography fontSize={14} fontWeight="bold">
                       Vị trí tiện ích
                     </Typography>
                     <Tooltip title={fieldDescriptions.position} placement="top">

@@ -71,11 +71,12 @@ function Profile() {
     message: "",
     severity: "success",
   });
-  const [loading,setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   // uploading state is removed as local file uploads are no longer supported
-  const [imageLoaded,setImageLoaded] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [selectedImageForCrop, setSelectedImageForCrop] = useState(null);
+  const [isAvatarUpdated, setIsAvatarUpdated] = useState(false);
 
   // Kiểm tra URL ảnh hợp lệ
   const isValidImageUrl = (url) => {
@@ -155,23 +156,22 @@ function Profile() {
 
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/upload-image`,
+        `${API_BASE_URL}/upload-image-admin`,
         formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
 
       if (response.data.success && response.data.path) {
         const avatarPath = response.data.path;
         setAdminInfo((prev) => ({ ...prev, avatar: avatarPath }));
         setPreviewAvatar(avatarPath);
+        setIsAvatarUpdated(true);
+        window.dispatchEvent(new Event("adminInfoUpdated")); // Thông báo cập nhật
       }
     } catch (err) {
       setSnackbar({
         open: true,
-        message: "Lỗi khi upload ảnh.",
+        message: err.response?.data?.message || "Lỗi khi upload ảnh.",
         severity: "error",
       });
     }
@@ -270,19 +270,27 @@ function Profile() {
     if (Object.keys(newErrors).length > 0) return;
 
     try {
+      const payload = {
+        name: adminInfo.name,
+        phoneNumber: adminInfo.phoneNumber,
+        avatar: adminInfo.avatar, // Luôn gửi avatar
+      };
+
       const response = await axios.post(
         `${API_BASE_URL}/update-admin-info`,
-        { name: adminInfo.name, avatar: adminInfo.avatar },
+        payload,
         { withCredentials: true }
       );
 
       if (response.data.success) {
         setSnackbar({
           open: true,
-          message: "Cập nhật thông tin thành công.",
+          message: response.data.message,
           severity: "success",
         });
-        await fetchAdminInfo(); // Đồng bộ sau khi lưu
+        await fetchAdminInfo();
+        setIsAvatarUpdated(false);
+        window.dispatchEvent(new Event("adminInfoUpdated")); // Thông báo cập nhật
       } else {
         setSnackbar({
           open: true,
@@ -427,13 +435,6 @@ function Profile() {
                   </Avatar>
                 </label>
 
-                <input
-                  id="upload-avatar"
-                  hidden
-                  accept="image/*"
-                  type="file"
-                  onChange={handleUploadAvatar}
-                />
                 <input
                   id="upload-avatar"
                   hidden

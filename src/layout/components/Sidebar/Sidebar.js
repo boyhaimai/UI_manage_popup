@@ -66,30 +66,41 @@ function Sidebar({ setHeaderOpen }) {
   };
 
   const handleSupportClick = () => {
-     setHeaderOpen((prev) => !prev);  // Kích hoạt Header khi nhấp Support
+    setHeaderOpen((prev) => !prev);
+  };
+
+  const fetchAdminInfo = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/get-admin-info`, {
+        withCredentials: true,
+      });
+      if (res.data.success) {
+        setAdminInfo(res.data.admin);
+      } else {
+        throw new Error(res.data.message || "Không lấy được thông tin.");
+      }
+    } catch (err) {
+      console.error("Lỗi khi lấy thông tin admin:", err);
+      if (err.response?.status === 401) {
+        triggerTokenExpiration();
+      }
+    }
   };
 
   useEffect(() => {
-    const fetchAdminInfo = async () => {
-      try {
-        const res = await axios.get(`${API_BASE_URL}/get-admin-info`, {
-          withCredentials: true,
-        });
-        if (res.data.success) {
-          setAdminInfo(res.data.admin);
-        } else {
-          throw new Error(res.data.message || "Không lấy được thông tin.");
-        }
-      } catch (err) {
-        console.error("Lỗi khi lấy thông tin admin:", err);
-        if (err.response?.status === 401) {
-          triggerTokenExpiration();
-        }
-      }
+    fetchAdminInfo();
+
+    // Lắng nghe sự kiện adminInfoUpdated
+    const handleAdminInfoUpdated = () => {
+      fetchAdminInfo();
     };
 
-    fetchAdminInfo();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    window.addEventListener("adminInfoUpdated", handleAdminInfoUpdated);
+
+    // Dọn dẹp sự kiện khi component unmount
+    return () => {
+      window.removeEventListener("adminInfoUpdated", handleAdminInfoUpdated);
+    };
   }, []);
 
   return (
@@ -150,7 +161,14 @@ function Sidebar({ setHeaderOpen }) {
           sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}
         >
           <Avatar
-            src={adminInfo?.avatar || ""}
+            src={
+              adminInfo?.avatar
+                ? adminInfo.avatar.startsWith("http") ||
+                  adminInfo.avatar.startsWith("data:image")
+                  ? adminInfo.avatar
+                  : `${API_BASE_URL}${adminInfo.avatar}`
+                : ""
+            }
             alt={adminInfo?.name || ""}
             className={cx("avatar")}
           />
@@ -177,8 +195,7 @@ function Sidebar({ setHeaderOpen }) {
                 maxWidth: "150px",
               }}
             >
-              {adminInfo?.phoneNumber || ""}{" "}
-              {/* Sửa từ email thành phoneNumber */}
+              {adminInfo?.phoneNumber || ""}
             </Typography>
           </Box>
         </Box>

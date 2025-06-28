@@ -16,6 +16,7 @@ import classNames from "classnames/bind";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+import CropAvatarModal from "~/Components/CropAvatarModal";
 import vazoImage from "~/Components/assets/image/vazo.png";
 import styles from "./CustomizeUI.module.scss";
 
@@ -47,6 +48,8 @@ export default function ChatWidgetSetupUI() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [selectedImageForCrop, setSelectedImageForCrop] = useState(null);
   const navigate = useNavigate();
 
   // Lấy config_id và cấu hình chi tiết
@@ -61,7 +64,6 @@ export default function ChatWidgetSetupUI() {
         );
         let id = configResponse.data.config_id;
         if (!configResponse.data.success || !id) {
-          // Nếu không có config_id, tạo mới hoặc chọn website
           setError("Không tìm thấy cấu hình. Vui lòng chọn website.");
           setTimeout(() => navigate("/select_website"), 2000);
           return;
@@ -108,14 +110,20 @@ export default function ChatWidgetSetupUI() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setLogoFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setLogo(reader.result);
-        setLogoType("upload");
+        setSelectedImageForCrop(reader.result);
+        setCropModalOpen(true);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleCroppedAvatar = (croppedFile) => {
+    setLogoFile(croppedFile);
+    setLogo(URL.createObjectURL(croppedFile));
+    setLogoType("upload");
+    setCropModalOpen(false);
   };
 
   const saveConfig = async (useDefault = false) => {
@@ -125,7 +133,7 @@ export default function ChatWidgetSetupUI() {
 
     try {
       const formData = new FormData();
-      formData.append("id_config", configId || ""); // Gửi configId, có thể rỗng
+      formData.append("id_config", configId || "");
       formData.append(
         "themeColor",
         useDefault ? defaultConfig.themeColor : color
@@ -181,7 +189,6 @@ export default function ChatWidgetSetupUI() {
   };
 
   const handleSaveConfig = async () => {
-    // Nếu chưa có configId hoặc chưa nhập gì, dùng mặc định
     const useDefault =
       !configId ||
       (!logo &&
@@ -197,7 +204,6 @@ export default function ChatWidgetSetupUI() {
   };
 
   const handleSkip = async () => {
-    // Luôn dùng cấu hình mặc định khi nhấn Bỏ qua
     const success = await saveConfig(true);
     if (success) {
       navigate("/copy_code");
@@ -715,6 +721,13 @@ export default function ChatWidgetSetupUI() {
             </Button>
           </Box>
         </Box>
+
+        <CropAvatarModal
+          open={cropModalOpen}
+          image={selectedImageForCrop}
+          onClose={() => setCropModalOpen(false)}
+          onCropComplete={handleCroppedAvatar}
+        />
       </Box>
     </Box>
   );
