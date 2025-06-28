@@ -13,7 +13,6 @@
 .title_header {
   padding: 16px;
   border-bottom: 1px solid #d9dbe4 !important;
-  background-color: var(--c_white);
   width: 100%;
   line-height: 25px;
   position: absolute;
@@ -24,7 +23,8 @@
   justify-content: space-between;
   align-items: center;
   position: fixed;
-  border-radius: 8px 8px 0 0
+  border-radius: 8px 8px 0 0;
+  background-image: var(--b_liner);
 }
 .title {
   font-size: 16px;
@@ -37,4 +37,42 @@
   color: var(--c_red_light) !important;
   cursor: pointer;
   margin-left: 25px;
+}
+/* Bắt đầu: Kiểu cho Vị trí tiện ích */
+.position_wrapper {
+  width: 60px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1px;
+  line-height: 15px;
+  margin-left: 20px;
+  border: 2px solid transparent; /* Thêm viền trong suốt để tránh dịch chuyển layout */
+  border-radius: 6px;
+  padding: 3px;
+  transition: border-color 0.2s ease-in-out;
+  cursor: pointer; /* Thêm con trỏ để cho biết có thể nhấp */
+}
+
+.position_wrapper:hover {
+  border-color: #ccc; /* Hiệu ứng khi di chuột qua */
+}
+
+/* Đây là lớp chính để hiển thị viền aqua khi được chọn */
+.position_wrapper_active {
+  border-color: aqua !important;
+}
+
+.position {
+  margin-right: 3px;
+  border: 1px solid #5a6981;
+  width: 10px !important;
+  height: 10px;
+  margin-bottom: 3px;
+}
+
+/* Lớp này làm nổi bật vị trí cụ thể bên trong hộp (ví dụ: góc trên bên trái) */
+.position_active {
+  background-color: aqua;
+  border-color: aqua;
 }

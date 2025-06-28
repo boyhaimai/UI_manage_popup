@@ -120,6 +120,7 @@ function Sidebar({ setHeaderOpen }) {
           <MenuItemCustom
             title="About us"
             to="https://vaway.vn/"
+            target="_blank"
             icon={<ErrorRounded className={cx("icon_menu")} />}
           />
           <MenuItemCustom

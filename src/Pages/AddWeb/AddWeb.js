@@ -12,6 +12,11 @@ import {
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import vazoImage from "~/Components/assets/image/vazo.png";
+import styles from "./AddWeb.module.scss";
+import classNames from "classnames/bind";
+
+const cx = classNames.bind(styles);
 
 const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
 
@@ -76,49 +81,86 @@ function AddWeb() {
     <Box sx={{ minHeight: "100vh", bgcolor: "#f9fafb", display: "flex" }}>
       <Box
         sx={{
-          width: { xs: 0, md: 340 },
-          bgcolor: "white",
-          p: 3,
+          width: "25%",
+          bgcolor: "#f0f0f0",
+          padding: "24px 50px",
           borderRight: "1px solid #e5e7eb",
           display: { xs: "none", md: "block" },
         }}
       >
         <Box textAlign="center" mb={4}>
-          <img
-            src="https://dashboard.tawk.to/images/onboarding/tawk-logo.svg"
-            alt="Logo"
-            style={{ height: 40 }}
-          />
+          <img src={vazoImage} alt="Logo" style={{ height: 40 }} />
         </Box>
+        <Paper
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            width: "100%",
+            maxWidth: 340,
+            padding: "20px 25px",
+            marginBottom: "32px",
+          }}
+        >
+          <Box>
+            <button className={cx("chat-toggle-btn")}>
+              <img
+                className={cx("chat-toggle-image")}
+                src="https://img.icons8.com/ios-filled/50/ffffff/speech-bubble.png"
+                alt="Nút Chat"
+              />
+            </button>
+          </Box>
+          <Box className={cx("title_box")}>
+            <span>Trò chuyện trực tuyến</span>
+            <p>Thêm trò chuyện trực tiếp vào trang web của bạn</p>
+          </Box>
+        </Paper>
         <Typography
           variant="h6"
           fontWeight="bold"
           gutterBottom
-          sx={{ fontSize: 20 }}
+          sx={{ fontSize: 20, color: "#000000", margin: "10px 0" }}
         >
-          Trò chuyện trực tiếp
+          Theo dõi và trò chuyện với khách truy cập trên trang web của bạn
         </Typography>
-        <Typography variant="body2" sx={{ fontSize: 14, textAlign: "left" }}>
-          Chúng tôi sẽ thiết lập những điều cơ bản để bạn có thể thấy ngay khách
-          truy cập vào trang web của mình và cài đặt tiện ích. Đừng lo lắng, có
-          nhiều tính năng nâng cao hơn (tất cả đều miễn phí) có thể tùy chỉnh
-          trong khu vực quản trị sau khi thiết lập ban đầu. Nếu bạn gặp khó
-          khăn, hãy bắt đầu trò chuyện bên dưới:
-        </Typography>
-        <Box mt={4}>
-          <Button variant="outlined" fullWidth sx={{ fontSize: 14 }}>
+        <Box sx={{ marginTop: "32px", textAlign: "left" }}>
+          <Typography
+            variant="body2"
+            sx={{ fontSize: 12, marginBottom: "32px" }}
+          >
+            Hãy để bạn thiết lập với những điều cơ bản, để bạn có thể ngay lập
+            tức xem khách truy cập trên trang web của mình và cài đặt widget.
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ fontSize: 12, marginBottom: "32px" }}
+          >
+            Đừng lo lắng, có nhiều tính năng nâng cao hơn (tất cả miễn phí) có
+            thể được tùy chỉnh trong khu vực quản trị sau khi thiết lập ban đầu.
+          </Typography>
+          <Typography variant="body2" sx={{ fontSize: 12 }}>
+            Nếu bạn bị mắc kẹt, hãy bắt đầu một cuộc trò chuyện bên dưới:
+          </Typography>
+        </Box>
+        <Box mt={2} sx={{ textAlign: "center", textTransform: "reverse" }}>
+          <Button
+            variant="contained"
+            sx={{ fontSize: 14, color: "#000000", backgroundColor: "#ffffff" }}
+          >
             Trò chuyện với chúng tôi
           </Button>
         </Box>
       </Box>
 
       <Container
-        maxWidth="md"
+        maxWidth="75%"
         sx={{
           flex: 1,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          width: "100%",
         }}
       >
         <Paper elevation={3} sx={{ p: 4, width: "100%", maxWidth: 500 }}>
@@ -126,12 +168,9 @@ function AddWeb() {
             variant="h5"
             fontWeight="bold"
             gutterBottom
-            sx={{ fontSize: 24 }}
+            sx={{ fontSize: 24, margin: "32px" }}
           >
             Địa chỉ trang web của bạn là gì?
-          </Typography>
-          <Typography variant="body2" sx={{ mb: 2, color: "#6b7280" }}>
-            Nhập URL đầy đủ, bao gồm giao thức và port nếu dùng localhost (VD: http://localhost:8080/testLib.html).
           </Typography>
 
           {error && (
@@ -148,7 +187,7 @@ function AddWeb() {
           <Box display="flex" alignItems="center" gap={2} sx={{ mt: 2, mb: 4 }}>
             <TextField
               variant="outlined"
-              placeholder="http://localhost:8080/testLib.html"
+              placeholder="https://example.com"
               fullWidth
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
@@ -163,20 +202,20 @@ function AddWeb() {
               sx={{
                 bgcolor: "#22c55e",
                 color: "white",
-                width: 48,
-                height: 48,
+                width: 40,
+                height: 40,                
                 borderRadius: "8px",
                 "&:hover": { bgcolor: "#16a34a" },
               }}
             >
-              <ArrowForwardIcon />
+              <ArrowForwardIcon sx={{fontSize: "25px !important",}}/>
             </IconButton>
           </Box>
 
           <Box display="flex" justifyContent="space-between">
             <Button
               variant="text"
-              sx={{ fontSize: 14 }}
+              sx={{ fontSize: 13, textTransform: "revert",color: "#000000" }}
               onClick={() => navigate("/manage_page")} // Quay lại trang quản lý
             >
               Trở lại
@@ -184,7 +223,7 @@ function AddWeb() {
             <Button
               variant="contained"
               onClick={handleNext}
-              sx={{ fontSize: 14 }}
+              sx={{ fontSize: 13, textTransform: "revert" }}
             >
               Kế tiếp
             </Button>

@@ -332,23 +332,23 @@ function DetailConversation() {
                 mt: 1,
                 fontSize: 14,
                 "& .MuiOutlinedInput-root": {
-                  color: "var(--layer_background)",
+                  color: "var(--c_letter)",
                   "& fieldset": {
-                    borderColor: "var(--layer_background)",
+                    borderColor: "var(--c_letter)",
                   },
                   "&:hover fieldset": {
-                    borderColor: "var(--layer_background)",
+                    borderColor: "var(--c_letter)",
                   },
                   "&.Mui-focused fieldset": {
-                    borderColor: "var(--layer_background)",
+                    borderColor: "var(--c_letter)",
                   },
                 },
                 "& .MuiInputLabel-root": {
-                  color: "var(--layer_background)",
+                  color: "var(--c_letter)",
                   fontSize: 14,
                 },
                 "& .MuiInputLabel-root.Mui-focused": {
-                  color: "var(--layer_background)",
+                  color: "var(--c_letter)",
                 },
               }}
               InputProps={{
@@ -362,7 +362,7 @@ function DetailConversation() {
                       <ClearIcon
                         sx={{
                           fontSize: "15px",
-                          color: "var(--layer_background)",
+                          color: "var(--c_letter)",
                         }}
                       />
                     </IconButton>
@@ -381,13 +381,13 @@ function DetailConversation() {
                 fontSize: 14,
                 height: "100%",
                 padding: "6px 16px",
-                bgcolor: "var(--layer_background)",
-                "&:hover": {
-                  bgcolor: "var(--layer_background)", // hoặc darken bằng color lib nếu muốn
-                  opacity: 0.9,
-                },
+                color: "var(--layer_background)",
+                bgcolor: "black",
                 textTransform: "none",
-                color: "var(--c_letter)",
+                "&:hover": {
+                  borderColor: "var(--layer_background)",
+                  backgroundColor: "var(--c_letter)",
+                },
               }}
               disabled={fetching || !searchInput.trim()}
             >
@@ -405,10 +405,11 @@ function DetailConversation() {
                 padding: "6px 16px",
                 borderColor: "var(--layer_background)",
                 color: "var(--layer_background)",
+                bgcolor: "black",
                 textTransform: "none",
                 "&:hover": {
                   borderColor: "var(--layer_background)",
-                  backgroundColor: "rgba(0,0,0,0.04)", // hoặc rgba phù hợp
+                  backgroundColor: "var(--c_letter)",
                 },
               }}
             >
@@ -425,10 +426,11 @@ function DetailConversation() {
                 padding: "6px 16px",
                 borderColor: "var(--layer_background)",
                 color: "var(--layer_background)",
+                bgcolor: "black",
                 textTransform: "none",
                 "&:hover": {
                   borderColor: "var(--layer_background)",
-                  backgroundColor: "rgba(0,0,0,0.04)",
+                  backgroundColor: "var(--c_letter)",
                 },
               }}
             >
@@ -500,7 +502,7 @@ function DetailConversation() {
             mb: 2,
             fontSize: 18,
             fontWeight: "bold",
-            color: "var(--layer_background)",
+            color: "var(--c_letter)",
           }}
         >
           Có {Object.keys(messagesBySession).length} hội thoại

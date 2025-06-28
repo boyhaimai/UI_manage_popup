@@ -31,14 +31,17 @@ import {
   Place,
   Image,
   Edit,
+  HelpOutline, // Thêm icon HelpOutline
 } from "@mui/icons-material";
 import classNames from "classnames/bind";
-import styles from "../ManagePage/ManagePage.module.scss";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+
+import styles from "./SettingPage.module.scss";
 import Avatar from "~/Components/Avatar/Avatar";
 import useDebounce from "~/hooks/useDebounce";
 import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpirationContext";
+import CropAvatarModal from "~/Components/CropAvatarModal";
 
 const cx = classNames.bind(styles);
 const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
@@ -56,6 +59,29 @@ const positionOptions = [
   { name: "Dưới cùng bên trái", value: "bottom-left", activeIndex: 9 },
   { name: "Dưới cùng bên phải", value: "bottom-right", activeIndex: 11 },
 ];
+
+// Mô tả cho từng trường
+const fieldDescriptions = {
+  avatar:
+    "Nhập URL ảnh đại diện hoặc tải lên file ảnh (jpg, png, gif, webp) để hiển thị cho chatbot.",
+  title:
+    "Đặt tên cho trang hoặc chatbot (tối đa 50 ký tự) để nhận diện dễ dàng.",
+  historyEnabled: "Bật/tắt tính năng lưu lịch sử trò chuyện với người dùng.",
+  currentDomain: "Tên miền hiện tại của website, không thể chỉnh sửa.",
+  themeColor:
+    "Chọn mã màu hex (ví dụ: #0abfbc) để tùy chỉnh màu nền của chatbot.",
+  textColor:
+    "Chọn mã màu hex (ví dụ: #ffffff) để tùy chỉnh màu chữ của chatbot.",
+  welcomeMessage:
+    "Nhập tin nhắn chào mừng khi người dùng mở chatbot (tối đa 200 ký tự).",
+  webhookUrl:
+    "Nhập URL webhook để kết nối với server xử lý tin nhắn (bắt buộc nếu không dùng WebSocket).",
+  serverUrl:
+    "Nhập URL server để đồng bộ dữ liệu (ví dụ: https://your-server.com).",
+  linkContact:
+    "Nhập liên kết liên hệ (ví dụ: https://your-contact-page.com) để người dùng gửi yêu cầu.",
+  position: "Chọn vị trí hiển thị của tiện ích chatbot trên trang web.",
+};
 
 function SettingPage() {
   const [form, setForm] = useState({
@@ -97,6 +123,9 @@ function SettingPage() {
   const [id_config, setIdConfig] = useState("");
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarError, setAvatarError] = useState("");
+  const [openCrop, setOpenCrop] = useState(false);
+  const [tempImage, setTempImage] = useState("");
+
   const navigate = useNavigate();
   const { triggerTokenExpiration } = useTokenExpiration();
   const wrapperRef = useRef();
@@ -265,29 +294,21 @@ function SettingPage() {
     const file = e.target.files[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append("avatar", file);
-    formData.append("type", "popup");
-    formData.append("id_config", form.id_config);
-
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/upload-image`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      if (response.data.success && response.data.path) {
-        setForm((prev) => ({ ...prev, avatar: response.data.path }));
-        setAvatarError("");
-        setAvatarFile(null);
-      }
-    } catch (err) {
-      console.error("Lỗi khi upload ảnh:", err);
-      setAvatarError("Không thể tải ảnh lên server.");
-    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setTempImage(reader.result); // base64 preview ảnh
+      setOpenCrop(true); // mở modal crop
+    };
+    reader.readAsDataURL(file);
   };
+
+  const handleCroppedImage = async (croppedFile) => {
+    setAvatarFile(croppedFile);
+
+    // Preview ngay trong form (dùng blob local)
+    const previewUrl = URL.createObjectURL(croppedFile);
+    setForm((prev) => ({ ...prev, avatar: previewUrl }));
+  };  
 
   const handlePositionChange = (value) => {
     setForm({ ...form, position: value });
@@ -301,7 +322,7 @@ function SettingPage() {
   };
 
   const handleCopy = () => {
-    const code = `<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v14@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`;
+    const code = `<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v15@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`;
     navigator.clipboard
       .writeText(code)
       .then(() => {
@@ -404,7 +425,9 @@ function SettingPage() {
     <div className={cx("wrapper")} ref={wrapperRef}>
       <Box className={cx("title_header")} ref={headerRef}>
         <Box>
-          <div style={{ fontSize: "16px" }}>Cài đặt</div>
+          <div style={{ fontSize: "16px", fontWeight: "bold", color: "white" }}>
+            Cài đặt
+          </div>
         </Box>
         <Box display="flex" gap={2}>
           <Button
@@ -577,7 +600,6 @@ function SettingPage() {
                         />
                       </Box>
                     </label>
-
                     <input
                       id="upload-avatar"
                       hidden
@@ -593,6 +615,14 @@ function SettingPage() {
                       <Typography fontSize={13} fontWeight="bold">
                         URL ảnh hoặc tải lên
                       </Typography>
+                      <Tooltip title={fieldDescriptions.avatar} placement="top">
+                        <IconButton size="small" sx={{ ml: 1 }}>
+                          <HelpOutline
+                            sx={{ fontSize: "14px", marginLeft: "-10px" }}
+                            color="action"
+                          />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                     <TextField
                       fullWidth
@@ -602,23 +632,6 @@ function SettingPage() {
                       onChange={handleChange}
                       error={!!avatarError}
                       helperText={avatarError}
-                      sx={{ "& .MuiInputBase-input": inputStyle }}
-                    />
-                  </Box>
-
-                  <Box sx={{ mb: 2 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                      <Edit sx={{ mr: 1, fontSize: 16 }} />
-                      <Typography fontSize={13} fontWeight="bold">
-                        Tên trang
-                      </Typography>
-                    </Box>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      name="title"
-                      value={form.title}
-                      onChange={handleChange}
                       sx={{ "& .MuiInputBase-input": inputStyle }}
                     />
                   </Box>
@@ -648,6 +661,31 @@ function SettingPage() {
                       />
                     </Box>
                   </Box>
+
+                  <Box sx={{ mb: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                      <Edit sx={{ mr: 1, fontSize: 16 }} />
+                      <Typography fontSize={13} fontWeight="bold">
+                        Tên widget
+                      </Typography>
+                      <Tooltip title={fieldDescriptions.title} placement="top">
+                        <IconButton size="small" sx={{ ml: 1 }}>
+                          <HelpOutline
+                            sx={{ fontSize: "14px", marginLeft: "-10px" }}
+                            color="action"
+                          />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      name="title"
+                      value={form.title}
+                      onChange={handleChange}
+                      sx={{ "& .MuiInputBase-input": inputStyle }}
+                    />
+                  </Box>
                 </Box>
 
                 <Box sx={{ mb: 2 }}>
@@ -656,6 +694,17 @@ function SettingPage() {
                     <Typography fontSize={13} fontWeight="bold">
                       URL trang
                     </Typography>
+                    <Tooltip
+                      title={fieldDescriptions.currentDomain}
+                      placement="top"
+                    >
+                      <IconButton size="small" sx={{ ml: 1 }}>
+                        <HelpOutline
+                          sx={{ fontSize: "14px", marginLeft: "-10px" }}
+                          color="action"
+                        />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                   <TextField
                     fullWidth
@@ -671,6 +720,17 @@ function SettingPage() {
                     <Typography fontSize={13} fontWeight="bold">
                       Màu cơ bản
                     </Typography>
+                    <Tooltip
+                      title={fieldDescriptions.themeColor}
+                      placement="top"
+                    >
+                      <IconButton size="small" sx={{ ml: 1 }}>
+                        <HelpOutline
+                          sx={{ fontSize: "14px", marginLeft: "-10px" }}
+                          color="action"
+                        />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                   <Box display="flex" alignItems="center" gap={1}>
                     {["#0066FF", "#D42B00", "#7B5FFF", "#03A84E"].map(
@@ -749,6 +809,17 @@ function SettingPage() {
                     <Typography fontSize={13} fontWeight="bold">
                       Màu chữ
                     </Typography>
+                    <Tooltip
+                      title={fieldDescriptions.textColor}
+                      placement="top"
+                    >
+                      <IconButton size="small" sx={{ ml: 1 }}>
+                        <HelpOutline
+                          sx={{ fontSize: "14px", marginLeft: "-10px" }}
+                          color="action"
+                        />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                   <Box display="flex" alignItems="center" gap={1}>
                     {["#ffffff", "#1e1e1e", "#cccccc"].map((color) => (
@@ -842,7 +913,7 @@ function SettingPage() {
                     fullWidth
                     multiline
                     rows={8}
-                    value={`<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v14@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`}
+                    value={`<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v15@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`}
                     InputProps={{
                       style: { fontFamily: "monospace", fontSize: 14 },
                       readOnly: true,
@@ -884,6 +955,17 @@ function SettingPage() {
                     <Typography fontSize={13} fontWeight="bold">
                       Lời chào mừng
                     </Typography>
+                    <Tooltip
+                      title={fieldDescriptions.welcomeMessage}
+                      placement="top"
+                    >
+                      <IconButton size="small" sx={{ ml: 1 }}>
+                        <HelpOutline
+                          sx={{ fontSize: "14px", marginLeft: "-10px" }}
+                          color="action"
+                        />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                   <TextField
                     fullWidth
@@ -900,6 +982,17 @@ function SettingPage() {
                     <Typography fontSize={13} fontWeight="bold">
                       Webhook URL
                     </Typography>
+                    <Tooltip
+                      title={fieldDescriptions.webhookUrl}
+                      placement="top"
+                    >
+                      <IconButton size="small" sx={{ ml: 1 }}>
+                        <HelpOutline
+                          sx={{ fontSize: "14px", marginLeft: "-10px" }}
+                          color="action"
+                        />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                   <TextField
                     fullWidth
@@ -910,7 +1003,8 @@ function SettingPage() {
                     sx={{ "& .MuiInputBase-input": inputStyle }}
                   />
                 </Box>
-                <Box sx={{ mb: 2 }}>
+
+                {/* <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                     <Cloud sx={{ mr: 1, fontSize: 16 }} />
                     <Typography fontSize={13} fontWeight="bold">
@@ -925,13 +1019,25 @@ function SettingPage() {
                     onChange={handleChange}
                     sx={{ "& .MuiInputBase-input": inputStyle }}
                   />
-                </Box>
+                </Box> */}
+
                 <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                     <ContactMail sx={{ mr: 1, fontSize: 16 }} />
                     <Typography fontSize={13} fontWeight="bold">
                       Link liên hệ
                     </Typography>
+                    <Tooltip
+                      title={fieldDescriptions.linkContact}
+                      placement="top"
+                    >
+                      <IconButton size="small" sx={{ ml: 1 }}>
+                        <HelpOutline
+                          sx={{ fontSize: "14px", marginLeft: "-10px" }}
+                          color="action"
+                        />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                   <TextField
                     fullWidth
@@ -948,6 +1054,14 @@ function SettingPage() {
                     <Typography fontSize={13} fontWeight="bold">
                       Vị trí tiện ích
                     </Typography>
+                    <Tooltip title={fieldDescriptions.position} placement="top">
+                      <IconButton size="small" sx={{ ml: 1 }}>
+                        <HelpOutline
+                          sx={{ fontSize: "14px", marginLeft: "-10px" }}
+                          color="action"
+                        />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                   <Grid container spacing={1} sx={{ maxWidth: "100%", ml: 1 }}>
                     {positionOptions.map((option) => (
@@ -994,6 +1108,13 @@ function SettingPage() {
           {copySuccess ? "Đã sao chép mã cài đặt!" : "Lưu cấu hình thành công!"}
         </Alert>
       </Snackbar>
+
+      <CropAvatarModal
+        open={openCrop}
+        image={tempImage}
+        onClose={() => setOpenCrop(false)}
+        onCropComplete={handleCroppedImage}
+      />
     </div>
   );
 }

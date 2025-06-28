@@ -2,13 +2,9 @@ import {
   Box,
   Button,
   Grid,
-  MenuItem,
-  Select,
   TextField,
   Typography,
   Divider,
-  FormControl,
-  InputLabel,
   Alert,
   Snackbar,
   Avatar,
@@ -21,6 +17,8 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import axios from "axios";
 import styles from "./Profile.module.scss";
+
+import CropAvatarModal from "~/Components/CropAvatarModal";
 
 const cx = classNames.bind(styles);
 
@@ -73,9 +71,11 @@ function Profile() {
     message: "",
     severity: "success",
   });
-  const [loading, setLoading] = useState(true);
+  const [loading,setLoading] = useState(true);
   // uploading state is removed as local file uploads are no longer supported
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageLoaded,setImageLoaded] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [selectedImageForCrop, setSelectedImageForCrop] = useState(null);
 
   // Kiểm tra URL ảnh hợp lệ
   const isValidImageUrl = (url) => {
@@ -135,14 +135,23 @@ function Profile() {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const handleUploadAvatar = async (e) => {
+  const handleUploadAvatar = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setSelectedImageForCrop(reader.result); // dạng base64
+      setCropModalOpen(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCroppedAvatar = async (croppedFile) => {
     const formData = new FormData();
-    formData.append("avatar", file);
+    formData.append("avatar", croppedFile);
     formData.append("type", "admin");
-    formData.append("phoneNumber", adminInfo.phoneNumber); // để server xóa ảnh cũ
+    formData.append("phoneNumber", adminInfo.phoneNumber);
 
     try {
       const response = await axios.post(
@@ -155,7 +164,9 @@ function Profile() {
       );
 
       if (response.data.success && response.data.path) {
-        setAdminInfo((prev) => ({ ...prev, avatar: response.data.path }));
+        const avatarPath = response.data.path;
+        setAdminInfo((prev) => ({ ...prev, avatar: avatarPath }));
+        setPreviewAvatar(avatarPath);
       }
     } catch (err) {
       setSnackbar({
@@ -396,7 +407,11 @@ function Profile() {
                   >
                     {previewAvatar && (
                       <img
-                        src={previewAvatar}
+                        src={
+                          previewAvatar.startsWith("http")
+                            ? previewAvatar
+                            : `${API_BASE_URL}${previewAvatar}`
+                        }
                         alt="avatar"
                         style={{
                           width: "100%",
@@ -406,7 +421,6 @@ function Profile() {
                         onLoad={() => setImageLoaded(true)}
                         onError={() => {
                           setImageLoaded(false);
-                          setPreviewAvatar("");
                         }}
                       />
                     )}
@@ -462,6 +476,7 @@ function Profile() {
                   <TextField
                     fullWidth
                     required
+                    disabled
                     value={adminInfo.phoneNumber}
                     InputProps={{ readOnly: true }}
                     sx={{ ...inputStyle }}
@@ -600,7 +615,7 @@ function Profile() {
           </DialogActions>
         </Dialog>
 
-        <Typography sx={{ fontSize: 16, fontWeight: "bold", mb: 2 }}>
+        {/* <Typography sx={{ fontSize: 16, fontWeight: "bold", mb: 2 }}>
           Giao diện
         </Typography>
         <FormControl sx={{ minWidth: 200 }}>
@@ -625,7 +640,7 @@ function Profile() {
               Tối
             </MenuItem>
           </Select>
-        </FormControl>
+        </FormControl> */}
       </Box>
 
       <Snackbar
@@ -642,6 +657,13 @@ function Profile() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      <CropAvatarModal
+        open={cropModalOpen}
+        image={selectedImageForCrop}
+        onClose={() => setCropModalOpen(false)}
+        onCropComplete={handleCroppedAvatar}
+      />
     </div>
   );
 }

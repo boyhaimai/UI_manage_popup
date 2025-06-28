@@ -6,10 +6,10 @@ import { NavLink } from "react-router-dom";
 
 const cx = classNames.bind(styles);
 
-function MenuItem({ title, to, icon, onClick }) {
-    const isLink = Boolean(to);
-   const Component = isLink ? NavLink : "div";
-    const className = isLink
+function MenuItem({ title, to, icon, onClick, target }) {
+  const isLink = Boolean(to);
+  const Component = isLink ? NavLink : "div";
+  const className = isLink
     ? (nav) => cx("menu_item", { active: nav.isActive }) // dùng hàm cho NavLink
     : cx("menu_item");
   return (
@@ -17,7 +17,8 @@ function MenuItem({ title, to, icon, onClick }) {
       className={className}
       onClick={onClick}
       to={to}
-      
+      target={target}
+      rel={target === "_blank" ? "noopener noreferrer" : undefined}
     >
       {icon}
       <span className={cx("title")}>{title}</span>

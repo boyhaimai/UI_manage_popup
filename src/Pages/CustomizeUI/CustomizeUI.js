@@ -16,6 +16,7 @@ import classNames from "classnames/bind";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+import vazoImage from "~/Components/assets/image/vazo.png";
 import styles from "./CustomizeUI.module.scss";
 
 const cx = classNames.bind(styles);
@@ -207,37 +208,73 @@ export default function ChatWidgetSetupUI() {
     <Box display="flex" minHeight="100vh">
       <Box
         sx={{
-          width: { xs: 0, md: 340 },
-          bgcolor: "white",
-          p: 3,
+          width: "25%",
+          bgcolor: "#f0f0f0",
+          padding: "24px 50px",
           borderRight: "1px solid #e5e7eb",
           display: { xs: "none", md: "block" },
         }}
       >
         <Box textAlign="center" mb={4}>
-          <img
-            src="https://dashboard.tawk.to/images/onboarding/tawk-logo.svg"
-            alt="Logo"
-            style={{ height: 40 }}
-          />
+          <img src={vazoImage} alt="Logo" style={{ height: 40 }} />
         </Box>
+        <Paper
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            width: "100%",
+            maxWidth: 340,
+            padding: "20px 25px",
+            marginBottom: "32px",
+          }}
+        >
+          <Box>
+            <button className={cx("chat-toggle")}>
+              <img
+                className={cx("chat-toggle")}
+                src="https://img.icons8.com/ios-filled/50/ffffff/speech-bubble.png"
+                alt="Nút Chat"
+              />
+            </button>
+          </Box>
+          <Box className={cx("title_box")}>
+            <span>Trò chuyện trực tuyến</span>
+            <p>Thêm trò chuyện trực tiếp vào trang web của bạn</p>
+          </Box>
+        </Paper>
         <Typography
           variant="h6"
           fontWeight="bold"
           gutterBottom
-          sx={{ fontSize: 20 }}
+          sx={{ fontSize: 20, color: "#000000", margin: "10px 0" }}
         >
-          Trò chuyện trực tiếp
+          Theo dõi và trò chuyện với khách truy cập trên trang web của bạn
         </Typography>
-        <Typography variant="body2" sx={{ fontSize: 14, textAlign: "left" }}>
-          Chúng tôi sẽ thiết lập những điều cơ bản để bạn có thể thấy ngay khách
-          truy cập vào trang web của mình và cài đặt tiện ích. Đừng lo lắng, có
-          nhiều tính năng nâng cao hơn (tất cả đều miễn phí) có thể tùy chỉnh
-          trong khu vực quản trị sau khi thiết lập ban đầu. Nếu bạn gặp khó
-          khăn, hãy bắt đầu trò chuyện bên dưới:
-        </Typography>
-        <Box mt={4}>
-          <Button variant="outlined" fullWidth sx={{ fontSize: 14 }}>
+        <Box sx={{ marginTop: "32px", textAlign: "left" }}>
+          <Typography
+            variant="body2"
+            sx={{ fontSize: 12, marginBottom: "32px" }}
+          >
+            Hãy để bạn thiết lập với những điều cơ bản, để bạn có thể ngay lập
+            tức xem khách truy cập trên trang web của mình và cài đặt widget.
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ fontSize: 12, marginBottom: "32px" }}
+          >
+            Đừng lo lắng, có nhiều tính năng nâng cao hơn (tất cả miễn phí) có
+            thể được tùy chỉnh trong khu vực quản trị sau khi thiết lập ban đầu.
+          </Typography>
+          <Typography variant="body2" sx={{ fontSize: 12 }}>
+            Nếu bạn bị mắc kẹt, hãy bắt đầu một cuộc trò chuyện bên dưới:
+          </Typography>
+        </Box>
+        <Box mt={2} sx={{ textAlign: "center", textTransform: "reverse" }}>
+          <Button
+            variant="contained"
+            sx={{ fontSize: 14, color: "#000000", backgroundColor: "#ffffff" }}
+          >
             Trò chuyện với chúng tôi
           </Button>
         </Box>

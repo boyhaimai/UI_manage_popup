@@ -1,0 +1,29 @@
+.chat-toggle-btn { 
+  width: 45px; 
+  height: 45px; 
+  border: none; 
+  border-radius: 50%; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  transition: opacity 0.5s; 
+  padding: 0; 
+  margin: 0; 
+  background-color: aqua; 
+  user-select: none; 
+}
+img.chat-toggle-image { 
+  width: 33px; 
+  height: 33px; 
+  border-radius: 50%; 
+  object-fit: contain; 
+}
+.title_box span{
+    font-size: 16px;
+    font-weight: bold;
+}
+.title_box p {
+    font-size: 13px;
+    color: var(--c_letter);
+}
