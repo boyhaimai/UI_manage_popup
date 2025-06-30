@@ -63,7 +63,7 @@ export default function ChatUIClone() {
   useEffect(() => {
     const fetchActiveChats = async () => {
       try {
-        const response = await fetch("http://localhost:5000/get-active-chats", {
+        const response = await fetch("https://ai.bang.vawayai.com:5000/get-active-chats", {
           credentials: "include",
         });
         if (!response.ok) {
@@ -98,7 +98,7 @@ export default function ChatUIClone() {
       try {
         const [chatId, domain] = selectedChat.chatId.split("@");
         const response = await fetch(
-          `http://localhost:5000/get-history?userId=${chatId}&domain=${encodeURIComponent(
+          `https://ai.bang.vawayai.com:5000/get-history?userId=${chatId}&domain=${encodeURIComponent(
             domain
           )}`,
           { credentials: "include" }
@@ -139,7 +139,7 @@ export default function ChatUIClone() {
   const handleJoinChat = async () => {
     try {
       const [chatId, domain] = selectedChat.chatId.split("@");
-      const response = await fetch("http://localhost:5000/toggle-bot", {
+      const response = await fetch("https://ai.bang.vawayai.com:5000/toggle-bot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -185,7 +185,7 @@ export default function ChatUIClone() {
     // Nếu đang là admin chat => gọi toggle-bot để ngắt WebSocket phía client
     if (isAdminChatting) {
       try {
-        const response = await fetch("http://localhost:5000/toggle-bot", {
+        const response = await fetch("https://ai.bang.vawayai.com:5000/toggle-bot", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -218,7 +218,7 @@ export default function ChatUIClone() {
     try {
       const [chatId, domain] = selectedChat.chatId.split("@");
       const response = await fetch(
-        "http://localhost:5000/send-message-to-user",
+        "https://ai.bang.vawayai.com:5000/send-message-to-user",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -251,7 +251,7 @@ export default function ChatUIClone() {
 
   const handleBlockUser = async (chatId, domain) => {
     try {
-      const response = await fetch("http://localhost:5000/block-user", {
+      const response = await fetch("https://ai.bang.vawayai.com:5000/block-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chatId, domain }),

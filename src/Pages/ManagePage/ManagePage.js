@@ -42,7 +42,7 @@ import {
 import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpirationContext";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
 
 function ManagePage() {
   const [stats, setStats] = useState({
