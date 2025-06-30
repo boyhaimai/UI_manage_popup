@@ -37,7 +37,7 @@ const Header = ({ open, onClose }) => {
 
       try {
         const res = await fetch(
-          `https://ai.bang.vawayai.com:5000/get-history-admin-page?domain=${domain}&userId=${sessionId}`
+          `n8n.vazo.vn/get-history-admin-page?domain=${domain}&userId=${sessionId}`
         );
         const data = await res.json();
         if (data.success && Array.isArray(data.messages)) {
@@ -139,7 +139,7 @@ const Header = ({ open, onClose }) => {
       }, 1500);
 
       // Lưu lịch sử admin
-      await fetch("https://ai.bang.vawayai.com:5000/save-history-admin", {
+      await fetch("n8n.vazo.vn/save-history-admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -153,7 +153,7 @@ const Header = ({ open, onClose }) => {
       });
 
       // Lưu lịch sử bot
-      await fetch("https://ai.bang.vawayai.com:5000/save-history-admin", {
+      await fetch("n8n.vazo.vn/save-history-admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

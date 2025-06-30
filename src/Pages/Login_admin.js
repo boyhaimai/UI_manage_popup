@@ -16,8 +16,9 @@ import {
   IconButton,
 } from "@mui/material";
 import { Add, Visibility, VisibilityOff } from "@mui/icons-material";
+import config from "~/config";
 
-const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
+const API_BASE_URL = "n8n.vazo.vn";
 
 const inputStyle = {
   "& .MuiInputBase-root": {
@@ -122,7 +123,7 @@ function Login() {
       )
       .then((response) => {
         if (response.data.success) {
-          navigate("/manage_page");
+          navigate(config.routes.managePage);
         } else {
           setErrors({ server: response.data.message });
         }

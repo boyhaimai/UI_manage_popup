@@ -32,9 +32,10 @@ import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpir
 
 import classNames from "classnames/bind";
 import styles from "./DetailConversation.module.scss";
+import config from "~/config";
 const cx = classNames.bind(styles);
 
-const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
+const API_BASE_URL = "n8n.vazo.vn";
 
 function DetailConversation() {
   const navigate = useNavigate();
@@ -302,7 +303,7 @@ function DetailConversation() {
           <IconButton
             edge="start"
             color="inherit"
-            onClick={() => navigate("/manage_page")}
+            onClick={() => navigate(config.routes.managePage)}
           >
             <ArrowBackIcon sx={{ fontSize: 26 }} />
           </IconButton>

@@ -15,10 +15,11 @@ import { useNavigate } from "react-router-dom";
 import vazoImage from "~/Components/assets/image/vazo.png";
 import styles from "./AddWeb.module.scss";
 import classNames from "classnames/bind";
+import config from "~/config";
 
 const cx = classNames.bind(styles);
 
-const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
+const API_BASE_URL = "n8n.vazo.vn";
 
 function AddWeb() {
   const [website, setWebsite] = useState("");
@@ -216,7 +217,7 @@ function AddWeb() {
             <Button
               variant="text"
               sx={{ fontSize: 13, textTransform: "revert",color: "#000000" }}
-              onClick={() => navigate("/manage_page")} // Quay lại trang quản lý
+              onClick={() => navigate(config.routes.managePage)} // Quay lại trang quản lý
             >
               Trở lại
             </Button>

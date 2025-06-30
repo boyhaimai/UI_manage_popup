@@ -6,26 +6,34 @@
   align-items: center;
   border-radius: 15px;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.4) !important;
+  color: rgba(255, 255, 255, 0.5) !important; // Màu chữ mặc định (không active)
 
   &.active {
     .title {
-      color: rgba(255, 255, 255, 0.8) !important;
+      color: rgba(255, 255, 255, 1) !important; // Tăng độ sáng cho chữ khi active (trắng hoàn toàn)
     }
     svg {
-      color: rgba(255, 255, 255, 0.8) !important;
+      color: rgba(255, 255, 255, 1) !important; // Màu icon khi active (trắng hoàn toàn)
     }
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  // Màu icon khi không active
+  svg {
+    color: rgba(255, 255, 255, 0.5) !important; // Nhạt hơn khi không active
   }
 }
+
 .title {
   font-size: 13px;
   font-weight: 700;
   align-items: center;
   cursor: pointer;
   display: flex;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.5); // Màu chữ mặc định
   margin-left: 15px;
 }
+
 .menu_item:hover {
   background: rgba(255, 255, 255, 0.1);
 }

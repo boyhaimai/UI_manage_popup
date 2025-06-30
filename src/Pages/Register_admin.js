@@ -12,8 +12,9 @@ import {
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import config from "~/config";
 
-const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
+const API_BASE_URL = "n8n.vazo.vn";
 const TURNSTILE_SITE_KEY = "0x4AAAAAABgmhl75Zpxjdvs7"; // Thay bằng Site Key của bạn
 
 const inputStyle = {
@@ -317,7 +318,7 @@ function Register() {
           <Button
             variant="outlined"
             fullWidth
-            onClick={() => navigate("/")}
+            onClick={() => navigate(config.routes.login_admin)}
             sx={{
               fontSize: 13,
               color: "#0F172A",
