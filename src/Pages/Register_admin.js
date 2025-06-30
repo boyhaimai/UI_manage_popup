@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import config from "~/config";
 
-const API_BASE_URL = "https://n8n.vazo.vn";
+const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
 const TURNSTILE_SITE_KEY = "0x4AAAAAABgmhl75Zpxjdvs7"; // Thay bằng Site Key của bạn
 
 const inputStyle = {

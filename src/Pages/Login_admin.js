@@ -18,7 +18,7 @@ import {
 import { Add, Visibility, VisibilityOff } from "@mui/icons-material";
 import config from "~/config";
 
-const API_BASE_URL = "https://n8n.vazo.vn";
+const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
 
 const inputStyle = {
   "& .MuiInputBase-root": {

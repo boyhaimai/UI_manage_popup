@@ -44,7 +44,7 @@ import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpir
 import CropAvatarModal from "~/Components/CropAvatarModal";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = "https://n8n.vazo.vn";
+const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
 
 const inputStyle = {
   backgroundColor: "#f7f8fa",

@@ -24,7 +24,7 @@ import Avatar from "~/Components/Avatar/Avatar";
 import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpirationContext";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = "https://n8n.vazo.vn";
+const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
 
 function Sidebar({ setHeaderOpen }) {
   const [anchorEl, setAnchorEl] = useState(null);
