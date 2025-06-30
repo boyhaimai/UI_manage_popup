@@ -63,7 +63,7 @@ export default function ChatUIClone() {
   useEffect(() => {
     const fetchActiveChats = async () => {
       try {
-        const response = await fetch("n8n.vazo.vn/get-active-chats", {
+        const response = await fetch("https://n8n.vazo.vn/get-active-chats", {
           credentials: "include",
         });
         if (!response.ok) {
@@ -98,7 +98,7 @@ export default function ChatUIClone() {
       try {
         const [chatId, domain] = selectedChat.chatId.split("@");
         const response = await fetch(
-          `n8n.vazo.vn/get-history?userId=${chatId}&domain=${encodeURIComponent(
+          `https://n8n.vazo.vn/get-history?userId=${chatId}&domain=${encodeURIComponent(
             domain
           )}`,
           { credentials: "include" }
@@ -139,7 +139,7 @@ export default function ChatUIClone() {
   const handleJoinChat = async () => {
     try {
       const [chatId, domain] = selectedChat.chatId.split("@");
-      const response = await fetch("n8n.vazo.vn/toggle-bot", {
+      const response = await fetch("https://n8n.vazo.vn/toggle-bot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -185,7 +185,7 @@ export default function ChatUIClone() {
     // Nếu đang là admin chat => gọi toggle-bot để ngắt WebSocket phía client
     if (isAdminChatting) {
       try {
-        const response = await fetch("n8n.vazo.vn/toggle-bot", {
+        const response = await fetch("https://n8n.vazo.vn/toggle-bot", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -218,7 +218,7 @@ export default function ChatUIClone() {
     try {
       const [chatId, domain] = selectedChat.chatId.split("@");
       const response = await fetch(
-        "n8n.vazo.vn/send-message-to-user",
+        "https://n8n.vazo.vn/send-message-to-user",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -251,7 +251,7 @@ export default function ChatUIClone() {
 
   const handleBlockUser = async (chatId, domain) => {
     try {
-      const response = await fetch("n8n.vazo.vn/block-user", {
+      const response = await fetch("https://n8n.vazo.vn/block-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chatId, domain }),

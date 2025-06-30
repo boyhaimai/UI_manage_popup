@@ -35,7 +35,7 @@ import styles from "./DetailConversation.module.scss";
 import config from "~/config";
 const cx = classNames.bind(styles);
 
-const API_BASE_URL = "n8n.vazo.vn";
+const API_BASE_URL = "https://n8n.vazo.vn";
 
 function DetailConversation() {
   const navigate = useNavigate();
