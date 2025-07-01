@@ -105,7 +105,7 @@ const Header = ({ open, onClose }) => {
       showTypingIndicator();
 
       const webhookResponse = await fetch(
-        "https://bang.daokhaccu.top/webhook/save_history",
+        "https://bang.daokhaccu.top/webhook/ai-assistant",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

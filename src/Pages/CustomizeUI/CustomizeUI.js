@@ -32,7 +32,7 @@ const defaultConfig = {
   position: "bottom-right",
   historyEnabled: "true",
   serverUrl: "https://ai.bang.vawayai.com:5000",
-  webhookUrl: "https://bang.daokhaccu.top/webhook/save_history",
+  webhookUrl: "https://bang.daokhaccu.top/webhook/ai-assistant",
   avatar: "",
 };
 

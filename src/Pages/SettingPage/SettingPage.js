@@ -1028,7 +1028,7 @@ function SettingPage() {
                   />
                 </Box>
 
-                <Box sx={{ mb: 2 }}>
+                {/* <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                     <Cloud sx={{ mr: 1, fontSize: 16 }} />
                     <Typography fontSize={13} fontWeight="bold">
@@ -1043,7 +1043,7 @@ function SettingPage() {
                     onChange={handleChange}
                     sx={{ "& .MuiInputBase-input": inputStyle }}
                   />
-                </Box>
+                </Box> */}
 
                 <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
