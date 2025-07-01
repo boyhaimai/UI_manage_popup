@@ -87,9 +87,9 @@ function Register() {
     if (!form.name || form.name.trim().length < 2) {
       newErrors.name = "Tên phải có ít nhất 2 ký tự.";
     }
-    const phoneRegex = /^\+?\d{10,15}$/;
+    const phoneRegex = /^0\d{9}$/;
     if (!form.phoneNumber || !phoneRegex.test(form.phoneNumber)) {
-      newErrors.phoneNumber = "Số điện thoại không hợp lệ.";
+      newErrors.phoneNumber = "Số điện thoại phải có đúng 10 số và bắt đầu bằng 0.";
     }
     const strongRegex =
       /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!]).{8,}$/;
@@ -229,7 +229,7 @@ function Register() {
             onChange={handleChange}
             fullWidth
             required
-            placeholder="Nhập số điện thoại (VD: +84123456789)"
+            placeholder="Nhập số điện thoại"
             sx={{ ...inputStyle, mb: 2 }}
             error={!!errors.phoneNumber}
             helperText={errors.phoneNumber}
@@ -254,7 +254,7 @@ function Register() {
                         <Visibility sx={{ fontSize: 20 }} />
                       )}
                     </IconButton>
-                  </InputAdornment>
+                    </InputAdornment>
                 ) : null,
             }}
             value={form.password}
@@ -286,7 +286,7 @@ function Register() {
                         <Visibility sx={{ fontSize: 20 }} />
                       )}
                     </IconButton>
-                  </InputAdornment>
+                    </InputAdornment>
                 ) : null,
             }}
             value={form.confirmPassword}
@@ -330,7 +330,7 @@ function Register() {
             Đã có tài khoản? Đăng nhập
           </Button>
         </form>
-      </Box>
+        </Box>
     </Box>
   );
 }

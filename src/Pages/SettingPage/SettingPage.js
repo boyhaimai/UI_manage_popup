@@ -455,7 +455,10 @@ function SettingPage() {
           </Button>
           <FormControl variant="outlined" size="small" sx={{ minWidth: 200 }}>
             <InputLabel
-              sx={{ fontSize: "14px", color: "var(--layer_background)" }}
+              sx={{
+                fontSize: "14px",
+                color: "var(--layer_background)!important",
+              }}
             >
               Website
             </InputLabel>
@@ -516,7 +519,11 @@ function SettingPage() {
                 fontSize: "14px",
                 color: "var(--c_letter)",
                 bgcolor: "var(--layer_background)",
-                "&:hover": { bgcolor: "var(--layer_background)" },
+                "&:hover": {
+                  bgcolor: "#3c4043",
+                  color: "#fff", // thay đổi màu chữ khi hover
+                  transition: "all 0.2s ease-in-out",
+                },
                 py: 1,
                 px: 2,
                 height: 40,
@@ -566,49 +573,55 @@ function SettingPage() {
             >
               <Box sx={{ width: "49%" }} spacing={2}>
                 <Box>
-                  <Box position="relative">
-                    <label htmlFor="upload-avatar">
-                      <Box
-                        sx={{
-                          width: 80,
-                          height: 80,
-                          bgcolor: form.avatar ? "transparent" : "#00e0dc",
-                          borderRadius: 1,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: 30,
-                          color: "white",
-                          fontWeight: "bold",
-                          overflow: "hidden",
-                          cursor: "pointer",
-                          mb: 1,
-                        }}
-                      >
-                        <Avatar
-                          src={
-                            form.avatar
-                              ? form.avatar.startsWith("/uploads")
-                                ? `${API_BASE_URL}${form.avatar}`
-                                : form.avatar
-                              : "https://img.icons8.com/ios-filled/50/ffffff/artificial-intelligence.png"
-                          }
-                          alt="Avatar"
-                          className="avatar_preview"
-                          sx={{ width: "100%", height: "100%" }}
-                          onError={(e) =>
-                            (e.target.src = "/fallback-avatar.jpg")
-                          }
-                        />
-                      </Box>
-                    </label>
-                    <input
-                      id="upload-avatar"
-                      hidden
-                      accept="image/*"
-                      type="file"
-                      onChange={handleUploadImage}
-                    />
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <Box position="relative">
+                      <label htmlFor="upload-avatar">
+                        <Box
+                          sx={{
+                            width: 80,
+                            height: 80,
+                            bgcolor: form.avatar ? "transparent" : "#00e0dc",
+                            borderRadius: 1,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 30,
+                            color: "white",
+                            fontWeight: "bold",
+                            overflow: "hidden",
+                            cursor: "pointer",
+                            mb: 1,
+                          }}
+                        >
+                          <Avatar
+                            src={
+                              form.avatar
+                                ? form.avatar.startsWith("/uploads")
+                                  ? `${API_BASE_URL}${form.avatar}`
+                                  : form.avatar
+                                : "https://img.icons8.com/ios-filled/50/ffffff/artificial-intelligence.png"
+                            }
+                            alt="Avatar"
+                            className="avatar_preview"
+                            sx={{ width: "100%", height: "100%" }}
+                            onError={(e) =>
+                              (e.target.src = "/fallback-avatar.jpg")
+                            }
+                          />
+                        </Box>
+                      </label>
+                      <input
+                        id="upload-avatar"
+                        hidden
+                        accept="image/*"
+                        type="file"
+                        onChange={handleUploadImage}
+                      />
+                    </Box>
+                    <Typography sx={{ fontSize: 12, ml: 2, color: "var(--c_letter)", fontWeight: "500" }}>
+                      Chúng tôi đề xuất ảnh có kích thước tối <br />
+                      thiểu 512 x 512 cho trang.
+                    </Typography>
                   </Box>
 
                   <Box sx={{ lineHeight: 1.5, mb: 2 }}>
@@ -907,24 +920,13 @@ function SettingPage() {
               </Box>
 
               <Box sx={{ width: "49%" }}>
-                <Box
-                  sx={{
-                    position: "relative",
-                    "&:hover": { "& .copy-text": { opacity: 1 } },
-                  }}
-                  onClick={handleCopy}
-                  onMouseEnter={() => setIsHovered(true)}
-                  onMouseLeave={() => setIsHovered(false)}
-                >
+                <Box sx={{ mb: 2, position: "relative" }}>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                     <Code sx={{ mr: 1, fontSize: 25 }} />
                     <Typography fontSize={14} fontWeight="bold">
                       Mã Nhúng
                     </Typography>
-                    <Tooltip
-                      title={fieldDescriptions.code}
-                      placement="top"
-                    >
+                    <Tooltip title={fieldDescriptions.code} placement="top">
                       <IconButton size="small" sx={{ ml: 1 }}>
                         <HelpOutline
                           sx={{ fontSize: "14px", marginLeft: "-10px" }}
@@ -933,45 +935,57 @@ function SettingPage() {
                       </IconButton>
                     </Tooltip>
                   </Box>
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={8}
-                    value={`<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v16@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`}
-                    InputProps={{
-                      style: { fontFamily: "monospace", fontSize: 14 },
-                      readOnly: true,
-                    }}
+                  <Box
                     sx={{
-                      mb: 3,
-                      background: isCopied
-                        ? "aqua"
-                        : isHovered
-                        ? "aqua"
-                        : "transparent",
-                      transition: "opacity 0.2s",
-                      pointerEvents: "none",
+                      position: "relative",
+                      "&:hover .copy-text": { opacity: 1 },
                     }}
-                  />
-                  <Typography
-                    className="copy-text"
-                    sx={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      fontSize: 14,
-                      fontWeight: "bold",
-                      opacity: isCopied ? 1 : isHovered ? 1 : 0,
-                      transition: "opacity 0.2s",
-                      pointerEvents: "none",
-                      backgroundColor: "rgba(255, 255, 255)",
-                      padding: "6px 8px",
-                      borderRadius: "4px",
-                    }}
+                    onClick={handleCopy}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
                   >
-                    {isCopied ? "Đã sao chép!" : "Sao chép vào khay nhớ tạm"}
-                  </Typography>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={8}
+                      value={`<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v16@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`}
+                      InputProps={{
+                        style: { fontFamily: "monospace", fontSize: 14 },
+                        readOnly: true,
+                      }}
+                      sx={{
+                        mb: 3,
+                        background: isCopied
+                          ? "aqua"
+                          : isHovered
+                          ? "aqua"
+                          : "transparent",
+                        transition: "background 0.2s",
+                        "& .MuiInputBase-root": {
+                          cursor: "pointer", // Thêm con trỏ pointer để biểu thị có thể click
+                        },
+                      }}
+                    />
+                    <Typography
+                      className="copy-text"
+                      sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        fontSize: 14,
+                        fontWeight: "bold",
+                        opacity: isCopied ? 1 : isHovered ? 1 : 0,
+                        transition: "opacity 0.2s",
+                        pointerEvents: "none",
+                        backgroundColor: "rgba(255, 255, 255, 0.9)",
+                        padding: "6px 8px",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      {isCopied ? "Đã sao chép!" : "Sao chép vào khay nhớ tạm"}
+                    </Typography>
+                  </Box>
                 </Box>
                 <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>

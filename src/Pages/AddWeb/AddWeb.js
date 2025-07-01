@@ -78,6 +78,13 @@ function AddWeb() {
     }
   };
 
+  // Xử lý sự kiện nhấn Enter
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleNext();
+    }
+  };
+
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f9fafb", display: "flex" }}>
       <Box
@@ -192,6 +199,7 @@ function AddWeb() {
               fullWidth
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
+              onKeyDown={handleKeyDown} // Thêm sự kiện onKeyDown
               InputProps={{
                 sx: { fontSize: 14, height: 48 },
               }}
@@ -204,19 +212,19 @@ function AddWeb() {
                 bgcolor: "#22c55e",
                 color: "white",
                 width: 40,
-                height: 40,                
+                height: 40,
                 borderRadius: "8px",
                 "&:hover": { bgcolor: "#16a34a" },
               }}
             >
-              <ArrowForwardIcon sx={{fontSize: "25px !important",}}/>
+              <ArrowForwardIcon sx={{ fontSize: "25px !important" }} />
             </IconButton>
           </Box>
 
           <Box display="flex" justifyContent="space-between">
             <Button
               variant="text"
-              sx={{ fontSize: 13, textTransform: "revert",color: "#000000" }}
+              sx={{ fontSize: 13, textTransform: "revert", color: "#000000" }}
               onClick={() => navigate(config.routes.managePage)} // Quay lại trang quản lý
             >
               Trở lại
