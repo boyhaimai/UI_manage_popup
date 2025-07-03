@@ -66,7 +66,9 @@ function ManagePage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [websites, setWebsites] = useState([]);
   const [selectedWebsite, setSelectedWebsite] = useState("");
+  // eslint-disable-next-line no-unused-vars
   const [currentDomain, setCurrentDomain] = useState("");
+  // eslint-disable-next-line no-unused-vars
   const [id_config, setIdConfig] = useState("");
   const navigate = useNavigate();
   const { triggerTokenExpiration } = useTokenExpiration();

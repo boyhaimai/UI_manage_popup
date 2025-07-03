@@ -71,11 +71,14 @@ function Profile() {
     message: "",
     severity: "success",
   });
+  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(true);
   // uploading state is removed as local file uploads are no longer supported
+  // eslint-disable-next-line no-unused-vars
   const [imageLoaded, setImageLoaded] = useState(false);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [selectedImageForCrop, setSelectedImageForCrop] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [isAvatarUpdated, setIsAvatarUpdated] = useState(false);
 
   // Kiểm tra URL ảnh hợp lệ

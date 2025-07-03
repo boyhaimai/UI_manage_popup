@@ -140,7 +140,6 @@ function Login() {
   const handleAddNewWebsite = () => {
     navigate("/add-web");
   };
-
   return (
     <Box
       sx={{
@@ -193,7 +192,7 @@ function Login() {
               onChange={handleChange}
               fullWidth
               required
-              placeholder="Nhập số điện thoại (VD: +84123456789)"
+              placeholder="Nhập số điện thoại"
               sx={{ ...inputStyle, mb: 2 }}
               error={!!errors.phoneNumber}
               helperText={errors.phoneNumber}

@@ -63,9 +63,12 @@ export default function ChatUIClone() {
   useEffect(() => {
     const fetchActiveChats = async () => {
       try {
-        const response = await fetch("https://ai.bang.vawayai.com:5000/get-active-chats", {
-          credentials: "include",
-        });
+        const response = await fetch(
+          "https://ai.bang.vawayai.com:5000/get-active-chats",
+          {
+            credentials: "include",
+          }
+        );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -139,15 +142,18 @@ export default function ChatUIClone() {
   const handleJoinChat = async () => {
     try {
       const [chatId, domain] = selectedChat.chatId.split("@");
-      const response = await fetch("https://ai.bang.vawayai.com:5000/toggle-bot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chatId: `${chatId}@${domain}`,
-          enableBot: false,
-        }),
-        credentials: "include",
-      });
+      const response = await fetch(
+        "https://ai.bang.vawayai.com:5000/toggle-bot",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chatId: `${chatId}@${domain}`,
+            enableBot: false,
+          }),
+          credentials: "include",
+        }
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -185,15 +191,18 @@ export default function ChatUIClone() {
     // Nếu đang là admin chat => gọi toggle-bot để ngắt WebSocket phía client
     if (isAdminChatting) {
       try {
-        const response = await fetch("https://ai.bang.vawayai.com:5000/toggle-bot", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chatId: `${chatId}@${domain}`,
-            enableBot: true,
-          }),
-          credentials: "include",
-        });
+        const response = await fetch(
+          "https://ai.bang.vawayai.com:5000/toggle-bot",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chatId: `${chatId}@${domain}`,
+              enableBot: true,
+            }),
+            credentials: "include",
+          }
+        );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -249,35 +258,6 @@ export default function ChatUIClone() {
     }
   };
 
-  const handleBlockUser = async (chatId, domain) => {
-    try {
-      const response = await fetch("https://ai.bang.vawayai.com:5000/block-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chatId, domain }),
-        credentials: "include",
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      if (data.success) {
-        console.log(`[✅] Đã chặn user ${chatId} trên domain ${domain}`);
-        // Cập nhật lại danh sách active chats
-        setActiveChats((prev) =>
-          prev.filter((chat) => chat.chatId !== `${chatId}@${domain}`)
-        );
-      } else {
-        throw new Error(data.message || "Không thể chặn người dùng.");
-      }
-    } catch (err) {
-      console.error("Lỗi khi chặn người dùng:", err);
-      if (err.message.includes("401")) {
-        triggerTokenExpiration();
-      }
-    }
-  };
-
   return (
     <div className={cx("wrapper")}>
       <div className={cx("title")}>
@@ -295,10 +275,20 @@ export default function ChatUIClone() {
         flexDirection="column"
         height="100%"
         fontFamily="Roboto, sans-serif"
-        sx={{ background: "var(--c_white)", margin: "3px" }}
+        sx={{background: "var(--c_white)", margin: "3px"}}
       >
-        <Box display="flex" flex={1} minHeight={0} mt={6}>
-          <Box flex={1} display="flex" flexDirection="column" minHeight={0}>
+        <Box
+          display="flex"
+          flex={1}
+          minHeight={0}
+          mt={6}
+        >
+          <Box
+            flex={1}
+            display="flex"
+            flexDirection="column"
+            minHeight={0}
+          >
             <Box
               display="flex"
               alignItems="center"
@@ -332,10 +322,7 @@ export default function ChatUIClone() {
               </Box>
               <Box className={cx("title_active")} flex={1}>
                 Thời gian
-              </Box>
-              <Box className={cx("title_active")} width={100}>
-                Hành động
-              </Box>
+              </Box>            
             </Box>
 
             {activeChats.length > 0 ? (
@@ -394,25 +381,7 @@ export default function ChatUIClone() {
                     >
                       {new Date(chat.lastActivity).toLocaleTimeString()}
                     </Typography>
-                  </Box>
-                  <Box
-                    width={80}
-                    display="flex"
-                    alignItems="center"
-                    gap={1}
-                    className={cx("item_active")}
-                  >
-                    <IconButton
-                      variant="contained"
-                      color="error"
-                      onClick={(e) => {
-                        e.stopPropagation(); // Ngăn sự kiện click lan sang Box cha
-                        handleBlockUser(chat.chat_session_id, chat.domain);
-                      }}
-                    >
-                      <Block sx={{ fontSize: 23 }} />
-                    </IconButton>
-                  </Box>
+                  </Box>                 
                 </Box>
               ))
             ) : (

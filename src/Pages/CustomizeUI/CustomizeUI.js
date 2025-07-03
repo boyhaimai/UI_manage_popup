@@ -19,6 +19,9 @@ import { useNavigate } from "react-router-dom";
 import CropAvatarModal from "~/Components/CropAvatarModal";
 import vazoImage from "~/Components/assets/image/vazo.png";
 import styles from "./CustomizeUI.module.scss";
+import { useContext } from "react";
+import { ChatContext } from "~/contexts/OpenPopupAdminContext/OpenPopupAdminContext";
+import Header from "~/layout/components/Header/Header";
 
 const cx = classNames.bind(styles);
 const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
@@ -50,6 +53,8 @@ export default function ChatWidgetSetupUI() {
   const [loading, setLoading] = useState(false);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [selectedImageForCrop, setSelectedImageForCrop] = useState(null);
+  const { toggleChat, isChatOpen } = useContext(ChatContext) || {};
+
   const navigate = useNavigate();
 
   // Lấy config_id và cấu hình chi tiết
@@ -100,6 +105,14 @@ export default function ChatWidgetSetupUI() {
     };
     fetchConfig();
   }, [navigate]);
+
+  useEffect(() => {
+    if (!toggleChat) {
+      console.error(
+        "ChatContext is not provided. Ensure CustomizeUI is wrapped in ChatProvider."
+      );
+    }
+  }, [isChatOpen, toggleChat]);
 
   const handleLogoUrlChange = (e) => {
     setLogo(e.target.value);
@@ -212,6 +225,7 @@ export default function ChatWidgetSetupUI() {
 
   return (
     <Box display="flex" minHeight="100vh">
+      <Header />
       <Box
         sx={{
           width: "25%",
@@ -280,6 +294,10 @@ export default function ChatWidgetSetupUI() {
           <Button
             variant="contained"
             sx={{ fontSize: 14, color: "#000000", backgroundColor: "#ffffff" }}
+            onClick={() => {
+              console.log("Trò chuyện với chúng tôi clicked");
+              toggleChat();
+            }}
           >
             Trò chuyện với chúng tôi
           </Button>

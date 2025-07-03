@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Container,
   Box,
@@ -16,6 +16,8 @@ import vazoImage from "~/Components/assets/image/vazo.png";
 import styles from "./AddWeb.module.scss";
 import classNames from "classnames/bind";
 import config from "~/config";
+import { ChatContext } from "~/contexts/OpenPopupAdminContext/OpenPopupAdminContext";
+import Header from "~/layout/components/Header/Header";
 
 const cx = classNames.bind(styles);
 
@@ -26,8 +28,15 @@ function AddWeb() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
+  const { toggleChat, isChatOpen } = useContext(ChatContext) || {};
 
-  // Kiểm tra xem người dùng đã đăng nhập chưa
+  useEffect(() => {
+    console.log("AddWeb: isChatOpen =", isChatOpen, "toggleChat =", toggleChat);
+    if (!toggleChat) {
+      console.error("ChatContext is not provided. Ensure AddWeb is wrapped in ChatProvider.");
+    }
+  }, [isChatOpen, toggleChat]);
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -51,10 +60,9 @@ function AddWeb() {
       return;
     }
 
-    // Chuẩn hóa websiteUrl
     let formattedUrl = website;
     if (!/^https?:\/\//i.test(website)) {
-      formattedUrl = `https://${website}`; // Thêm https:// nếu thiếu giao thức
+      formattedUrl = `https://${website}`;
     }
 
     try {
@@ -65,7 +73,6 @@ function AddWeb() {
       );
       if (response.data.success) {
         setSuccess("Thêm website thành công! Đang chuyển hướng...");
-        // Chuyển hướng tới CustomizeUI.js thay vì ManagePage.js
         setTimeout(() => navigate("/customize_ui"), 1500);
       } else {
         setError(response.data.message);
@@ -78,7 +85,6 @@ function AddWeb() {
     }
   };
 
-  // Xử lý sự kiện nhấn Enter
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       handleNext();
@@ -87,6 +93,7 @@ function AddWeb() {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f9fafb", display: "flex" }}>
+      <Header />
       <Box
         sx={{
           width: "25%",
@@ -111,7 +118,7 @@ function AddWeb() {
           }}
         >
           <Box>
-            <button className={cx("chat-toggle-btn")}>
+            <button className={cx("chat-toggle-btn")} onClick={toggleChat}>
               <img
                 className={cx("chat-toggle-image")}
                 src="https://img.icons8.com/ios-filled/50/ffffff/speech-bubble.png"
@@ -155,6 +162,10 @@ function AddWeb() {
           <Button
             variant="contained"
             sx={{ fontSize: 14, color: "#000000", backgroundColor: "#ffffff" }}
+            onClick={() => {
+              console.log("Trò chuyện với chúng tôi clicked");
+              toggleChat();
+            }}
           >
             Trò chuyện với chúng tôi
           </Button>
@@ -199,7 +210,7 @@ function AddWeb() {
               fullWidth
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
-              onKeyDown={handleKeyDown} // Thêm sự kiện onKeyDown
+              onKeyDown={handleKeyDown}
               InputProps={{
                 sx: { fontSize: 14, height: 48 },
               }}
@@ -225,7 +236,7 @@ function AddWeb() {
             <Button
               variant="text"
               sx={{ fontSize: 13, textTransform: "revert", color: "#000000" }}
-              onClick={() => navigate(config.routes.managePage)} // Quay lại trang quản lý
+              onClick={() => navigate(config.routes.managePage)}
             >
               Trở lại
             </Button>

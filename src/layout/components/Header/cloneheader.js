@@ -11,29 +11,32 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import SendIcon from "@mui/icons-material/Send";
 import classNames from "classnames/bind";
-import styles from "./header.module.scss";
 import { ChatContext } from "~/contexts/OpenPopupAdminContext/OpenPopupAdminContext";
+import styles from "./header.module.scss";
 
 const cx = classNames.bind(styles);
 
-const Header = ({ open, onClose }) => {
-  const context = useContext(ChatContext);
-
-  // Chỉ sử dụng context nếu đang ở AddWeb (không truyền props)
-  const isUsingContext =
-    context &&
-    context.isChatOpen !== undefined &&
-    context.toggleChat !== undefined &&
-    open === undefined &&
-    onClose === undefined;
-
-  const isChatOpen = isUsingContext ? context.isChatOpen : open;
-  const handleClose = isUsingContext ? context.toggleChat : onClose;
-
+const Header = () => {
+  const { isChatOpen, toggleChat } = useContext(ChatContext) || {};
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef();
+
+  useEffect(() => {
+    console.log("Header: isChatOpen =", isChatOpen);
+    if (!toggleChat) {
+      console.error("ChatContext is not provided in Header. Ensure Header is wrapped in ChatProvider.");
+    }
+  }, [isChatOpen, toggleChat]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isTyping]);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -64,9 +67,9 @@ const Header = ({ open, onClose }) => {
     fetchMessages();
   }, []);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  const generateMessageId = () => {
+    return `msg_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+  };
 
   const getSessionId = () => {
     let sessionId = localStorage.getItem("chat_session_id");
@@ -77,37 +80,40 @@ const Header = ({ open, onClose }) => {
     return sessionId;
   };
 
-  const generateMessageId = () => {
-    return `msg_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+  const showTypingIndicator = () => {
+    setIsTyping(true);
+  };
+
+  const removeTypingIndicator = () => {
+    setIsTyping(false);
   };
 
   const addMessage = (text, sender, timestamp = null, messageId) => {
-    setMessages((prev) => [
-      ...prev,
-      {
-        text,
-        sender,
-        timestamp: timestamp || new Date().toISOString(),
-        id: messageId,
-      },
-    ]);
+    const messageContainer = {
+      text,
+      sender,
+      timestamp: timestamp || new Date().toISOString(),
+      id: messageId,
+    };
+    setMessages((prev) => [...prev, messageContainer]);
   };
 
   const handleSend = async () => {
     if (input.trim() === "") return;
 
-    const sessionId = getSessionId();
-    const domain = window.location.hostname || "localhost";
     const messageId = generateMessageId();
     const botMessageId = generateMessageId();
+    const domain = window.location.hostname || "localhost";
+    const sessionId = getSessionId();
 
     addMessage(input, "admin", null, messageId);
     setInput("");
-    setIsTyping(true);
 
     try {
+      showTypingIndicator();
+
       const webhookResponse = await fetch(
-        "https://bang.daokhaccu.top/webhook/save_history",
+        "https://bang.daokhaccu.top/webhook/ai-assistant",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -136,7 +142,7 @@ const Header = ({ open, onClose }) => {
       }
 
       setTimeout(() => {
-        setIsTyping(false);
+        removeTypingIndicator();
         addMessage(botReply, "bot", null, botMessageId);
       }, 1500);
 
@@ -168,7 +174,7 @@ const Header = ({ open, onClose }) => {
     } catch (err) {
       console.error("Lỗi khi gửi hoặc lưu:", err);
       setTimeout(() => {
-        setIsTyping(false);
+        removeTypingIndicator();
         addMessage(
           "Lỗi gửi tin nhắn. Vui lòng thử lại.",
           "bot",
@@ -217,15 +223,28 @@ const Header = ({ open, onClose }) => {
               Trợ lý AI
             </Typography>
           </Box>
-          <IconButton onClick={handleClose} sx={{ color: "#fff" }}>
+          <IconButton
+            onClick={() => {
+              console.log("Close button clicked");
+              toggleChat();
+            }}
+            sx={{ color: "#fff" }}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
 
-        <Box sx={{ flex: 1, p: 2, overflowY: "auto", bgcolor: "#f9f9f9" }}>
-          {messages.map((msg) => (
+        <Box
+          sx={{
+            flex: 1,
+            p: 2,
+            overflowY: "auto",
+            bgcolor: "#f9f9f9",
+          }}
+        >
+          {messages.map((msg, idx) => (
             <Box
-              key={msg.id}
+              key={idx}
               sx={{
                 mb: 1,
                 display: "flex",
@@ -253,11 +272,41 @@ const Header = ({ open, onClose }) => {
           ))}
 
           {isTyping && (
-            <Box sx={{ mb: 1, display: "flex", justifyContent: "flex-start" }}>
+            <Box
+              sx={{
+                mb: 1,
+                display: "flex",
+                justifyContent: "flex-start",
+              }}
+            >
               <Box className={cx("wrapper_typing")}>
-                <span style={dotStyle(0)}></span>
-                <span style={dotStyle(0.2)}></span>
-                <span style={dotStyle(0.4)}></span>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    background: "#fff",
+                    borderRadius: "50%",
+                    animation: "typing 1s infinite ease-in-out",
+                  }}
+                ></span>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    background: "#fff",
+                    borderRadius: "50%",
+                    animation: "typing 1s infinite 0.2s ease-in-out",
+                  }}
+                ></span>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    background: "#fff",
+                    borderRadius: "50%",
+                    animation: "typing 1s infinite 0.4s ease-in-out",
+                  }}
+                ></span>
               </Box>
             </Box>
           )}
@@ -291,14 +340,5 @@ const Header = ({ open, onClose }) => {
     </div>
   );
 };
-
-// typing dot styles
-const dotStyle = (delay) => ({
-  width: 6,
-  height: 6,
-  background: "#fff",
-  borderRadius: "50%",
-  animation: `typing 1s infinite ${delay}s ease-in-out`,
-});
 
 export default Header;

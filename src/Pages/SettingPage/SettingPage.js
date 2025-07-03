@@ -26,7 +26,6 @@ import {
   Code,
   Chat,
   Webhook,
-  Cloud,
   ContactMail,
   Place,
   Image,

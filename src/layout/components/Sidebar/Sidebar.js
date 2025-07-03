@@ -101,6 +101,7 @@ function Sidebar({ setHeaderOpen }) {
     return () => {
       window.removeEventListener("adminInfoUpdated", handleAdminInfoUpdated);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

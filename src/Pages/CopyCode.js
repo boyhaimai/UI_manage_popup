@@ -1,11 +1,21 @@
-import React, { useState, useEffect } from "react";
-import { Box, Typography, TextField, Button, Grid, Alert, Paper } from "@mui/material";
+import React, { useState, useEffect, useContext } from "react";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  Alert,
+  Paper,
+} from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import classNames from "classnames/bind";
 import styles from "./CustomizeUI/CustomizeUI.module.scss";
 import vazoImage from "~/Components/assets/image/vazo.png";
 import config from "~/config";
+import { ChatContext } from "~/contexts/OpenPopupAdminContext/OpenPopupAdminContext";
+import Header from "~/layout/components/Header/Header";
 
 const cx = classNames.bind(styles);
 
@@ -16,6 +26,7 @@ export default function CopyCode() {
   const [isCopied, setIsCopied] = useState(false);
   const [scriptCode, setScriptCode] = useState("");
   const [error, setError] = useState("");
+  const { toggleChat, isChatOpen } = useContext(ChatContext) || {};
   const navigate = useNavigate();
 
   // Lấy config_id và tạo mã nhúng khi component mount
@@ -45,6 +56,20 @@ export default function CopyCode() {
     fetchConfigId();
   }, [navigate]);
 
+  useEffect(() => {
+    console.log(
+      "CopyCode: isChatOpen =",
+      isChatOpen,
+      "toggleChat =",
+      toggleChat
+    );
+    if (!toggleChat) {
+      console.error(
+        "ChatContext is not provided. Ensure CopyCode is wrapped in ChatProvider."
+      );
+    }
+  }, [isChatOpen, toggleChat]);
+
   const handleCopy = () => {
     if (scriptCode) {
       navigator.clipboard.writeText(scriptCode).then(() => {
@@ -56,6 +81,7 @@ export default function CopyCode() {
 
   return (
     <Box display="flex" height="100vh">
+      <Header />
       {/* Sidebar */}
       <Box
         sx={{
@@ -125,6 +151,10 @@ export default function CopyCode() {
           <Button
             variant="contained"
             sx={{ fontSize: 14, color: "#000000", backgroundColor: "#ffffff" }}
+            onClick={() => {
+              console.log("Trò chuyện với chúng tôi clicked");
+              toggleChat();
+            }}
           >
             Trò chuyện với chúng tôi
           </Button>
@@ -222,7 +252,7 @@ export default function CopyCode() {
               </Typography>
             </Box>
 
-            <Box mt={4}>
+            {/* <Box mt={4}>
               <Typography variant="h6" sx={{ fontSize: 20 }}>
                 Cần hỗ trợ?
               </Typography>
@@ -264,7 +294,7 @@ export default function CopyCode() {
                   </Button>
                 </Grid>
               </Grid>
-            </Box>
+            </Box> */}
           </Box>
         </Box>
 

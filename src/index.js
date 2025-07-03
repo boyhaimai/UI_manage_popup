@@ -5,13 +5,16 @@ import reportWebVitals from "./reportWebVitals";
 import GlobalStyles from "~/Components/GlobalStyles/index";
 import theme from "./contexts/ThemeProviderMUI/ThemeProvider";
 import { ThemeProvider } from "@mui/material/styles";
+import { ChatProvider } from "~/contexts/OpenPopupAdminContext/OpenPopupAdminContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <ThemeProvider theme={theme}>
     <React.StrictMode>
       <GlobalStyles>
-        <App />
+        <ChatProvider>
+          <App />
+        </ChatProvider>
       </GlobalStyles>
     </React.StrictMode>
   </ThemeProvider>
