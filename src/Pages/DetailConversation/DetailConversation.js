@@ -35,7 +35,7 @@ import styles from "./DetailConversation.module.scss";
 import config from "~/config";
 const cx = classNames.bind(styles);
 
-const API_BASE_URL = "https://ai.bang.vawayai.com:5000";
+const API_BASE_URL = "https://n8n.vazo.vn/api";
 
 function DetailConversation() {
   const navigate = useNavigate();
