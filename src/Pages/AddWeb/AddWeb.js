@@ -21,7 +21,7 @@ import Header from "~/layout/components/Header/Header";
 
 const cx = classNames.bind(styles);
 
-const API_BASE_URL = "https://n8n.vazo.vn/api";
+const API_BASE_URL = "http://localhost:5000";
 
 function AddWeb() {
   const [website, setWebsite] = useState("");

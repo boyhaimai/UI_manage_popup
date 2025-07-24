@@ -24,7 +24,7 @@ import { ChatContext } from "~/contexts/OpenPopupAdminContext/OpenPopupAdminCont
 import Header from "~/layout/components/Header/Header";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = "https://n8n.vazo.vn/api";
+const API_BASE_URL = "http://localhost:5000";
 
 const presetColors = ["#1976d2", "#d32f2f", "#7b1fa2", "#03A84E"];
 const defaultConfig = {
@@ -34,7 +34,7 @@ const defaultConfig = {
   welcomeMessage: "Xin chào! Tôi là trợ lý AI. Tôi có thể giúp gì cho bạn?",
   position: "bottom-right",
   historyEnabled: "true",
-  serverUrl: "https://n8n.vazo.vn/api",
+  serverUrl: "http://localhost:5000",
   webhookUrl: "https://bang.daokhaccu.top/webhook/ai-assistant",
   avatar: "",
 };

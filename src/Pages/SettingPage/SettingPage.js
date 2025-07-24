@@ -43,7 +43,7 @@ import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpir
 import CropAvatarModal from "~/Components/CropAvatarModal";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = "https://n8n.vazo.vn/api";
+const API_BASE_URL = "http://localhost:5000";
 
 const inputStyle = {
   backgroundColor: "#f7f8fa",
@@ -323,7 +323,7 @@ function SettingPage() {
   };
 
   const handleCopy = () => {
-    const code = `<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v16@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`;
+    const code = `<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v17@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`;
     navigator.clipboard
       .writeText(code)
       .then(() => {
@@ -947,7 +947,7 @@ function SettingPage() {
                       fullWidth
                       multiline
                       rows={8}
-                      value={`<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v16@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`}
+                      value={`<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v17@main/dist/model_admin_just_chat.js" data-server-url="${form.serverUrl}" data-id-config="${id_config}" defer></script>`}
                       InputProps={{
                         style: { fontFamily: "monospace", fontSize: 14 },
                         readOnly: true,
