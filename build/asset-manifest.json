@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/static/css/main.8fb75197.css",
+    "main.js": "/static/js/main.a7b6d8b1.js",
+    "static/js/453.d1c93eb6.chunk.js": "/static/js/453.d1c93eb6.chunk.js",
+    "static/media/vazo.png": "/static/media/vazo.35ee6e1cb1c5ce939cd2.png",
+    "index.html": "/index.html",
+    "main.8fb75197.css.map": "/static/css/main.8fb75197.css.map",
+    "main.a7b6d8b1.js.map": "/static/js/main.a7b6d8b1.js.map",
+    "453.d1c93eb6.chunk.js.map": "/static/js/453.d1c93eb6.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.8fb75197.css",
+    "static/js/main.a7b6d8b1.js"
+  ]
+}
