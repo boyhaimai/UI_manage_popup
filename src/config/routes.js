@@ -10,6 +10,8 @@ const routes = {
   DetailConversation: "/detail_conversation",
   SettingPage: "/settings",
   profile: "/profile",
+  admin: "/admin",
+  forgetPass: "/forget_password",
 };
 
 export default routes;

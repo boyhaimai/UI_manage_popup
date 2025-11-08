@@ -9,6 +9,8 @@ import Message from "~/Pages/ManageMessage/ManageMessage";
 import DetailConversation from "~/Pages/DetailConversation/DetailConversation";
 import SettingPage from "~/Pages/SettingPage/SettingPage";
 import Profile from "~/Pages/Profile/Profile";
+import AdminDashboard from "~/Pages/Admin/Admin";
+import ForgetPass from "~/Pages/ForgetPass";
 
 const publicRoutes = [
   { path: config.routes.login_admin, component: LoginAdmin, layout: null },
@@ -17,6 +19,7 @@ const publicRoutes = [
     component: RegisterAdmin,
     layout: null,
   },
+  { path: config.routes.forgetPass, component: ForgetPass, layout: null },
   { path: config.routes.addWebsite, component: AddWebsite, layout: null },
   { path: config.routes.customizeUi, component: CustomizeUI, layout: null },
   { path: config.routes.copyCode, component: CopyCode, layout: null },
@@ -25,6 +28,7 @@ const publicRoutes = [
   { path: config.routes.DetailConversation, component: DetailConversation },
   { path: config.routes.SettingPage, component: SettingPage },
   { path: config.routes.profile, component: Profile },
+  { path: config.routes.admin, component: AdminDashboard },
 ];
 
 // truy cập riêng tư nếu không phải public thì chuyển hướng sang trang login

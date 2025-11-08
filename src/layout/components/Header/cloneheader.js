@@ -45,7 +45,7 @@ const Header = () => {
 
       try {
         const res = await fetch(
-          `https://n8n.vazo.vn/api/get-history-admin-page?domain=${domain}&userId=${sessionId}`
+          ` http://localhost:5000/get-history-admin-page?domain=${domain}&userId=${sessionId}`
         );
         const data = await res.json();
         if (data.success && Array.isArray(data.messages)) {
@@ -146,7 +146,7 @@ const Header = () => {
         addMessage(botReply, "bot", null, botMessageId);
       }, 1500);
 
-      await fetch("https://n8n.vazo.vn/api/save-history-admin", {
+      await fetch(" http://localhost:5000/save-history-admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -159,7 +159,7 @@ const Header = () => {
         }),
       });
 
-      await fetch("https://n8n.vazo.vn/api/save-history-admin", {
+      await fetch(" http://localhost:5000/save-history-admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

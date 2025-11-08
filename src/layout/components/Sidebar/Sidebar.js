@@ -22,9 +22,10 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import styles from "./Sidebar.module.scss";
 import Avatar from "~/Components/Avatar/Avatar";
 import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpirationContext";
+import routes from "~/config/routes";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = "https://n8n.vazo.vn/api";
+const API_BASE_URL = " http://localhost:5000";
 
 function Sidebar({ setHeaderOpen }) {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -49,9 +50,12 @@ function Sidebar({ setHeaderOpen }) {
         { withCredentials: true }
       );
       if (response.data.success) {
+        // ✅ Xóa token & role
         document.cookie =
           "authToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-        navigate(config.routes.login_admin);
+        localStorage.removeItem("userRole");
+
+        navigate(routes.login_admin);
       } else {
         throw new Error(response.data.message || "Đăng xuất thất bại.");
       }
@@ -101,7 +105,7 @@ function Sidebar({ setHeaderOpen }) {
     return () => {
       window.removeEventListener("adminInfoUpdated", handleAdminInfoUpdated);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -123,6 +127,14 @@ function Sidebar({ setHeaderOpen }) {
           to={config.routes.message}
           icon={<Telegram className={cx("icon_menu")} />}
         />
+        {localStorage.getItem("userRole") === "admin" && (
+          <MenuItemCustom
+            title="Admin"
+            to={config.routes.admin}
+            icon={<Person className={cx("icon_menu")} />}
+          />
+        )}
+
         <Box className={cx("support")}>
           <MenuItemCustom
             title="Settings"

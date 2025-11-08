@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   TextField,
   Button,
@@ -17,8 +17,9 @@ import {
 } from "@mui/material";
 import { Add, Visibility, VisibilityOff } from "@mui/icons-material";
 import config from "~/config";
+import routes from "~/config/routes";
 
-const API_BASE_URL = "https://n8n.vazo.vn/api";
+const API_BASE_URL = " http://localhost:5000";
 
 const inputStyle = {
   "& .MuiInputBase-root": {
@@ -55,6 +56,29 @@ function Login() {
   const [selectedWebsite, setSelectedWebsite] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/get-admin-info`, {
+          withCredentials: true, // Gửi cookie token
+        });
+        if (res.data.success && res.data.admin) {
+          // ✅ Có session hợp lệ → đi thẳng vào dashboard
+          localStorage.setItem("userRole", res.data.admin.role);
+          navigate(config.routes.managePage);
+        }
+      } catch (err) {
+        console.log(
+          "⛔ Chưa đăng nhập hoặc cookie hết hạn:",
+          err.response?.status
+        );
+        // Không làm gì → user ở lại trang login
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -94,6 +118,8 @@ function Login() {
 
       if (response.data.success) {
         setWebsites(response.data.websites);
+        localStorage.setItem("userRole", response.data.role); // 👉 lưu role
+
         if (response.data.websites.length === 0) {
           navigate("/add-web");
         }
@@ -138,7 +164,7 @@ function Login() {
   };
 
   const handleAddNewWebsite = () => {
-    navigate("/add-web");
+    navigate("/add_website");
   };
   return (
     <Box
@@ -245,20 +271,52 @@ function Login() {
             >
               {loading ? <CircularProgress size={24} /> : "Đăng nhập"}
             </Button>
-            <Button
-              variant="outlined"
-              fullWidth
-              onClick={() => navigate("/register_admin")}
+            <Box
               sx={{
-                fontSize: 13,
-                color: "#0F172A",
-                borderColor: "#0F172A",
-                "&:hover": { borderColor: "#1e293b", bgcolor: "#f8fafc" },
-                py: 1.5,
+                textAlign: "center",
+                color: "#6b7280",
+                display: "flex",
+                justifyContent: "space-between",
+                mb: 2,
               }}
             >
-              Chưa có tài khoản? Đăng ký
-            </Button>
+              <Typography sx={{ fontSize: "15px" }}>Ghi nhớ tôi</Typography>
+              <Typography
+                sx={{
+                  fontSize: "15px",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  color: "blue",
+                  fontWeight: "bold",
+                }}
+                onClick={() => navigate("/forget_password")}
+              >
+                Quên mật khẩu?
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                textAlign: "center",
+                fontSize: 16,
+                color: "#6b7280",
+                mt: 3,
+                display: "flex",
+              }}
+            >
+              Bạn không có tài khoản?{" "}
+              <Link to={routes.register_admin}>
+                <Typography
+                  sx={{
+                    textDecoration: "underline",
+                    color: "blue",
+                    fontSize: 16,
+                    fontWeight: "bold",
+                  }}
+                >
+                  Tạo tài khoản miễn phí
+                </Typography>
+              </Link>
+            </Box>
           </form>
         ) : (
           <Box>

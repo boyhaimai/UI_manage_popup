@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import config from "~/config";
 
-const API_BASE_URL = "https://n8n.vazo.vn/api";
+const API_BASE_URL = "http://localhost:5000";
 const TURNSTILE_SITE_KEY = "0x4AAAAAABi6UVPGEa0fBRYB"; // Thay bằng Site Key của bạn
 
 const inputStyle = {
@@ -73,8 +73,9 @@ function Register() {
     return () => {
       if (container) container.innerHTML = "";
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -89,7 +90,8 @@ function Register() {
     }
     const phoneRegex = /^0\d{9}$/;
     if (!form.phoneNumber || !phoneRegex.test(form.phoneNumber)) {
-      newErrors.phoneNumber = "Số điện thoại phải có đúng 10 số và bắt đầu bằng 0.";
+      newErrors.phoneNumber =
+        "Số điện thoại phải có đúng 10 số và bắt đầu bằng 0.";
     }
     const strongRegex =
       /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!]).{8,}$/;
@@ -104,9 +106,9 @@ function Register() {
     if (form.password !== form.confirmPassword) {
       newErrors.confirmPassword = "Mật khẩu không khớp.";
     }
-    if (!form.turnstileToken) {
-      newErrors.turnstileToken = "Vui lòng xác minh bạn không phải là bot.";
-    }
+    // if (!form.turnstileToken) {
+    //   newErrors.turnstileToken = "Vui lòng xác minh bạn không phải là bot.";
+    // }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -124,7 +126,7 @@ function Register() {
           name: form.name,
           phoneNumber: form.phoneNumber,
           password: form.password,
-          turnstileToken: form.turnstileToken, // Gửi token Turnstile
+          // turnstileToken: form.turnstileToken,
         },
         { withCredentials: true }
       );
@@ -254,7 +256,7 @@ function Register() {
                         <Visibility sx={{ fontSize: 20 }} />
                       )}
                     </IconButton>
-                    </InputAdornment>
+                  </InputAdornment>
                 ) : null,
             }}
             value={form.password}
@@ -286,7 +288,7 @@ function Register() {
                         <Visibility sx={{ fontSize: 20 }} />
                       )}
                     </IconButton>
-                    </InputAdornment>
+                  </InputAdornment>
                 ) : null,
             }}
             value={form.confirmPassword}
@@ -298,13 +300,13 @@ function Register() {
             error={!!errors.confirmPassword}
             helperText={errors.confirmPassword}
           />
-          <div id="turnstile-register" style={{ marginBottom: "16px" }}></div>
+          {/* <div id="turnstile-register" style={{ marginBottom: "16px" }}></div> */}
 
           <Button
             type="submit"
             variant="contained"
             fullWidth
-            disabled={!form.turnstileToken}
+            // disabled={!form.turnstileToken}
             sx={{
               fontSize: 13,
               bgcolor: "#0F172A",
@@ -330,7 +332,7 @@ function Register() {
             Đã có tài khoản? Đăng nhập
           </Button>
         </form>
-        </Box>
+      </Box>
     </Box>
   );
 }

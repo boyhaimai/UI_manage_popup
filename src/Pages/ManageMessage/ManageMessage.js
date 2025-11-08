@@ -64,7 +64,7 @@ export default function ChatUIClone() {
     const fetchActiveChats = async () => {
       try {
         const response = await fetch(
-          "https://n8n.vazo.vn/api/get-active-chats",
+          " http://localhost:5000/get-active-chats",
           {
             credentials: "include",
           }
@@ -101,7 +101,7 @@ export default function ChatUIClone() {
       try {
         const [chatId, domain] = selectedChat.chatId.split("@");
         const response = await fetch(
-          `https://n8n.vazo.vn/api/get-history?userId=${chatId}&domain=${encodeURIComponent(
+          ` http://localhost:5000/get-history?userId=${chatId}&domain=${encodeURIComponent(
             domain
           )}`,
           { credentials: "include" }
@@ -143,7 +143,7 @@ export default function ChatUIClone() {
     try {
       const [chatId, domain] = selectedChat.chatId.split("@");
       const response = await fetch(
-        "https://n8n.vazo.vn/api/toggle-bot",
+        " http://localhost:5000/toggle-bot",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -192,7 +192,7 @@ export default function ChatUIClone() {
     if (isAdminChatting) {
       try {
         const response = await fetch(
-          "https://n8n.vazo.vn/api/toggle-bot",
+          " http://localhost:5000/toggle-bot",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -227,7 +227,7 @@ export default function ChatUIClone() {
     try {
       const [chatId, domain] = selectedChat.chatId.split("@");
       const response = await fetch(
-        "https://n8n.vazo.vn/api/send-message-to-user",
+        " http://localhost:5000/send-message-to-user",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

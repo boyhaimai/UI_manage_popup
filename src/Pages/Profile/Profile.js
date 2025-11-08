@@ -22,7 +22,7 @@ import CropAvatarModal from "~/Components/CropAvatarModal";
 
 const cx = classNames.bind(styles);
 
-const API_BASE_URL = "https://n8n.vazo.vn/api";
+const API_BASE_URL = "http://localhost:5000";
 
 const inputStyle = {
   "& .MuiInputBase-root": {
@@ -271,13 +271,14 @@ function Profile() {
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
+    console.log("errors before return:", newErrors);
 
     try {
       const payload = {
         name: adminInfo.name,
         phoneNumber: adminInfo.phoneNumber,
         avatar: adminInfo.avatar, // Luôn gửi avatar
-      };
+      };      
 
       const response = await axios.post(
         `${API_BASE_URL}/update-admin-info`,
