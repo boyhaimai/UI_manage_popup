@@ -19,7 +19,7 @@ import { Add, Visibility, VisibilityOff } from "@mui/icons-material";
 import config from "~/config";
 import routes from "~/config/routes";
 
-const API_BASE_URL = " http://localhost:5000";
+const API_BASE_URL = " https://n8n.vazo.vn/api";
 
 const inputStyle = {
   "& .MuiInputBase-root": {

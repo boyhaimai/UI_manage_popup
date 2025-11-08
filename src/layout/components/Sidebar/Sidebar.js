@@ -25,7 +25,7 @@ import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpir
 import routes from "~/config/routes";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = " http://localhost:5000";
+const API_BASE_URL = " https://n8n.vazo.vn/api";
 
 function Sidebar({ setHeaderOpen }) {
   const [anchorEl, setAnchorEl] = useState(null);

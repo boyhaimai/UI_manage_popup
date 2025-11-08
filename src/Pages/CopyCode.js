@@ -19,7 +19,7 @@ import Header from "~/layout/components/Header/Header";
 
 const cx = classNames.bind(styles);
 
-const API_BASE_URL = " http://localhost:5000";
+const API_BASE_URL = " https://n8n.vazo.vn/api";
 
 export default function CopyCode() {
   const [isHovered, setIsHovered] = useState(false);
@@ -41,7 +41,7 @@ export default function CopyCode() {
         );
         if (response.data.success && response.data.config_id) {
           const configId = response.data.config_id;
-          const script = `<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v19@main/dist/model_admin_just_chat.js" data-server-url=" http://localhost:5000" data-id-config="${configId}" defer></script>`;
+          const script = `<script src="https://cdn.jsdelivr.net/gh/boyhaimai/model_admin_just_chat_v19@main/dist/model_admin_just_chat.js" data-server-url=" https://n8n.vazo.vn/api" data-id-config="${configId}" defer></script>`;
           setScriptCode(script);
         } else {
           setError("Không tìm thấy cấu hình. Vui lòng chọn website.");
