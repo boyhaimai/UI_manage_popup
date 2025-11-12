@@ -43,7 +43,7 @@ import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpir
 import CropAvatarModal from "~/Components/CropAvatarModal";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = " https://n8n.vazo.vn/api";
+const API_BASE_URL = " http://localhost:5000";
 
 const inputStyle = {
   backgroundColor: "#f7f8fa",
@@ -153,41 +153,40 @@ function SettingPage() {
     try {
       setFetchLoading(true);
 
-      // 1️. Lấy danh sách website của admin
+      // 1️. Lấy danh sách website
       const websiteResponse = await axios.get(`${API_BASE_URL}/get-websites`, {
         withCredentials: true,
       });
+
       if (!websiteResponse.data.success || !websiteResponse.data.websites) {
         setError("Không tìm thấy danh sách website.");
         return;
       }
       setWebsites(websiteResponse.data.websites);
 
-      // 2️. Lấy config_id hiện đang chọn
-      const configResponse = await axios.get(
-        `${API_BASE_URL}/get-selected-config`,
-        {
-          withCredentials: true,
-        }
-      );
-      if (!configResponse.data.success || !configResponse.data.config_id) {
+      // 2️. Lấy id_config từ localStorage
+      const storedConfigId = localStorage.getItem("selectedConfigId");
+      if (!storedConfigId) {
         setError("Không tìm thấy config_id. Vui lòng chọn website.");
         return;
       }
-      const curConfigId = configResponse.data.config_id;
-      setIdConfig(curConfigId);
+      setIdConfig(storedConfigId);
 
+      // 3️. Xác định domain hiện tại
       const selectedSite = websiteResponse.data.websites.find(
-        (w) => w.config_id === curConfigId
+        (w) => w.config_id === storedConfigId
       );
       if (selectedSite) {
         setSelectedWebsite(selectedSite.domain);
         setCurrentDomain(selectedSite.domain);
+      } else {
+        setError("Không tìm thấy website tương ứng với config_id này.");
+        return;
       }
 
-      // 3️. Lấy chi tiết cấu hình
+      // 4️. Lấy chi tiết cấu hình
       const configDataResponse = await axios.get(
-        `${API_BASE_URL}/get-config-by-id?id_config=${curConfigId}`,
+        `${API_BASE_URL}/get-config-by-id?id_config=${storedConfigId}`,
         { withCredentials: true }
       );
       if (configDataResponse.data) {
@@ -196,15 +195,15 @@ function SettingPage() {
           ...form,
           ...config,
           historyEnabled: config.historyEnabled ? "true" : "false",
-          avatar: config.avatar || "", // Đảm bảo avatar rỗng nếu không có
+          avatar: config.avatar || "",
         });
       } else {
         setError("Không thể tải cấu hình từ server.");
       }
 
-      // 4️. Lấy thống kê
+      // 5️. Lấy thống kê
       const statsResponse = await axios.get(
-        `${API_BASE_URL}/get-stats?config_id=${curConfigId}`,
+        `${API_BASE_URL}/get-stats?config_id=${storedConfigId}`,
         { withCredentials: true }
       );
       if (statsResponse.data.success) {
@@ -617,7 +616,14 @@ function SettingPage() {
                         onChange={handleUploadImage}
                       />
                     </Box>
-                    <Typography sx={{ fontSize: 12, ml: 2, color: "var(--c_letter)", fontWeight: "500" }}>
+                    <Typography
+                      sx={{
+                        fontSize: 12,
+                        ml: 2,
+                        color: "var(--c_letter)",
+                        fontWeight: "500",
+                      }}
+                    >
                       Chúng tôi đề xuất ảnh có kích thước tối <br />
                       thiểu 512 x 512 cho trang.
                     </Typography>

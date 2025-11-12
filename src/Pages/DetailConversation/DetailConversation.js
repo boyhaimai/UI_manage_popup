@@ -35,7 +35,7 @@ import styles from "./DetailConversation.module.scss";
 import config from "~/config";
 const cx = classNames.bind(styles);
 
-const API_BASE_URL = " https://n8n.vazo.vn/api";
+const API_BASE_URL = " http://localhost:5000";
 
 function DetailConversation() {
   const navigate = useNavigate();
@@ -64,39 +64,36 @@ function DetailConversation() {
   // Lấy idConfig và domain
   const fetchConfigAndDomain = async () => {
     try {
-      const configResponse = await axios.get(
-        `${API_BASE_URL}/get-selected-config`,
-        {
-          withCredentials: true,
-        }
-      );
-      if (configResponse.data.success && configResponse.data.config_id) {
-        setIdConfig(configResponse.data.config_id);
-      } else {
-        setError("Không tìm thấy config_id. Vui lòng chọn website.");
+      // 🔹 Lấy trực tiếp idConfig từ localStorage
+      const storedConfigId = localStorage.getItem("selectedConfigId");
+      if (!storedConfigId) {
+        setError("Không tìm thấy config_id. Vui lòng chọn website trước.");
+        setLoading(false);
         return;
       }
 
+      setIdConfig(storedConfigId);
+
+      // 🔹 Lấy danh sách website để tìm domain tương ứng
       const websiteResponse = await axios.get(`${API_BASE_URL}/get-websites`, {
         withCredentials: true,
       });
+
       if (websiteResponse.data.success && websiteResponse.data.websites) {
         const website = websiteResponse.data.websites.find(
-          (w) => w.config_id === configResponse.data.config_id
+          (w) => w.config_id === storedConfigId
         );
         if (website) {
           setDomain(website.domain);
         } else {
-          setError("Không tìm thấy website cho config_id này.");
+          setError("Không tìm thấy website tương ứng với config_id này.");
         }
       } else {
         setError("Không thể lấy danh sách website.");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Lỗi khi lấy thông tin.");
-      if (err.response?.status === 401) {
-        triggerTokenExpiration();
-      }
+      setError(err.response?.data?.message || "Lỗi khi lấy thông tin website.");
+      if (err.response?.status === 401) triggerTokenExpiration();
     } finally {
       setLoading(false);
     }
@@ -216,7 +213,6 @@ function DetailConversation() {
     setSearchInput("");
     setSearch("");
     setPage(1);
-    setFetching(true);
   };
 
   const handleKeyPress = (event) => {

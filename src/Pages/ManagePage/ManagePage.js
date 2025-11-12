@@ -42,7 +42,7 @@ import {
 import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpirationContext";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = " https://n8n.vazo.vn/api";
+const API_BASE_URL = "http://localhost:5000"; // Thay đổi URL cơ sở API nếu cần
 
 function ManagePage() {
   const [stats, setStats] = useState({
@@ -89,53 +89,67 @@ function ManagePage() {
       };
     }) || [];
 
-  const fetchConfigAndStats = async () => {
+  const fetchConfigAndStats = async (forcedConfigId = null) => {
     try {
       setFetchLoading(true);
       const websiteResponse = await axios.get(`${API_BASE_URL}/get-websites`, {
         withCredentials: true,
       });
-      if (websiteResponse.data.success && websiteResponse.data.websites) {
-        setWebsites(websiteResponse.data.websites);
-      } else {
+
+      if (!websiteResponse.data.success || !websiteResponse.data.websites) {
         setError("Không tìm thấy danh sách website.");
         return;
       }
 
-      const configResponse = await axios.get(
-        `${API_BASE_URL}/get-selected-config`,
-        { withCredentials: true }
-      );
-      if (configResponse.data.success && configResponse.data.config_id) {
-        setIdConfig(configResponse.data.config_id);
-        const selectedSite = websiteResponse.data.websites.find(
-          (w) => w.config_id === configResponse.data.config_id
-        );
-        if (selectedSite) {
-          setSelectedWebsite(selectedSite.domain);
-          setCurrentDomain(selectedSite.domain);
-        }
+      setWebsites(websiteResponse.data.websites);
 
-        const statsResponse = await axios.get(
-          `${API_BASE_URL}/get-stats?config_id=${configResponse.data.config_id}`,
+      // ✅ Ưu tiên dùng config_id từ localStorage hoặc từ đối số forcedConfigId
+      const storedConfigId =
+        forcedConfigId || localStorage.getItem("selectedConfigId");
+
+      let configIdToUse = storedConfigId;
+
+      if (!configIdToUse) {
+        // fallback nếu localStorage trống
+        const configResponse = await axios.get(
+          `${API_BASE_URL}/get-selected-config`,
           { withCredentials: true }
         );
-
-        if (statsResponse.data.success) {
-          setStats(statsResponse.data.stats);
-        } else {
-          setError("Không thể lấy thống kê cho config_id này.");
+        if (configResponse.data.success && configResponse.data.config_id) {
+          configIdToUse = configResponse.data.config_id;
+          localStorage.setItem("selectedConfigId", configIdToUse);
         }
-      } else {
+      }
+
+      if (!configIdToUse) {
         setError("Không tìm thấy config_id. Vui lòng chọn website.");
         return;
+      }
+
+      setIdConfig(configIdToUse);
+
+      const selectedSite = websiteResponse.data.websites.find(
+        (w) => w.config_id === configIdToUse
+      );
+      if (selectedSite) {
+        setSelectedWebsite(selectedSite.domain);
+        setCurrentDomain(selectedSite.domain);
+      }
+
+      const statsResponse = await axios.get(
+        `${API_BASE_URL}/get-stats?config_id=${configIdToUse}`,
+        { withCredentials: true }
+      );
+
+      if (statsResponse.data.success) {
+        setStats(statsResponse.data.stats);
+      } else {
+        setError("Không thể lấy thống kê cho config_id này.");
       }
     } catch (err) {
       console.error("Fetch config/stats error:", err);
       setError(err.response?.data?.message || "Không thể kết nối đến server.");
-      if (err.response?.status === 401) {
-        triggerTokenExpiration();
-      }
+      if (err.response?.status === 401) triggerTokenExpiration();
     } finally {
       setFetchLoading(false);
       setLoadingWebsite(false);
@@ -203,10 +217,13 @@ function ManagePage() {
         )
         .then((response) => {
           if (response.data.success) {
+            // ✅ Lưu config_id vào localStorage
+            localStorage.setItem("selectedConfigId", selectedSite.config_id);
+
             setSelectedWebsite(newDomain);
             setIdConfig(selectedSite.config_id);
             setCurrentDomain(newDomain);
-            fetchConfigAndStats();
+            fetchConfigAndStats(selectedSite.config_id);
           } else {
             setError(response.data.message);
           }
@@ -215,10 +232,9 @@ function ManagePage() {
           setError(
             err.response?.data?.message || "Không thể kết nối đến server."
           );
-          if (err.response?.status === 401) {
-            triggerTokenExpiration(); // Kích hoạt thông báo khi lỗi 401
-          }
-        });
+          if (err.response?.status === 401) triggerTokenExpiration();
+        })
+        .finally(() => setLoadingWebsite(false));
     }
   };
 
@@ -502,7 +518,7 @@ function ManagePage() {
                       color: "#D81B60",
                     },
                     {
-                      title: "Số Lần Xem Trang",
+                      title: "Tổng Số Lần Xem Trang",
                       value: stats.pageViewsToday,
                       delta: calculateDelta(
                         stats.pageViewsToday,
@@ -528,7 +544,7 @@ function ManagePage() {
                           alignItems: "center",
                           justifyContent: "space-between",
                           width: "100%",
-                          height: "100%",
+                           minHeight: 184,
                         }}
                       >
                         <Box display="flex" alignItems="center" gap={1}>
@@ -552,18 +568,20 @@ function ManagePage() {
                                 marginLeft: "20px",
                               }}
                             >
-                              {item.title !== "Cuộc Trò Chuyện" && (
-                                <p
-                                  style={{
-                                    color: "var(--c_letter)",
-                                    fontSize: 12,
-                                    marginTop: "10px",
-                                    marginBottom: "10px",
-                                  }}
-                                >
-                                  Hôm nay
-                                </p>
-                              )}
+                              {item.title !== "Cuộc Trò Chuyện" &&
+                                item.title !== "Tổng Số Lần Xem Trang" && (
+                                  <p
+                                    style={{
+                                      color: "var(--c_letter)",
+                                      fontSize: 12,
+                                      marginTop: "10px",
+                                      marginBottom: "10px",
+                                    }}
+                                  >
+                                    Hôm nay
+                                  </p>
+                                )}
+
                               {item.value}
                             </Box>
                             {item.delta && (

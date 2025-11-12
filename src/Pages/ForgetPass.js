@@ -15,7 +15,7 @@ import axios from "axios";
 import config from "~/config";
 import routes from "~/config/routes";
 
-const API_BASE_URL = "https://n8n.vazo.vn/api"; // Thay đổi theo URL backend của bạn
+const API_BASE_URL = "http://localhost:5000"; // Thay đổi theo URL backend của bạn
 
 const inputStyle = {
   "& .MuiInputBase-root": {

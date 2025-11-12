@@ -25,7 +25,7 @@ import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpir
 import routes from "~/config/routes";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = " https://n8n.vazo.vn/api";
+const API_BASE_URL = " http://localhost:5000";
 
 function Sidebar({ setHeaderOpen }) {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -54,6 +54,7 @@ function Sidebar({ setHeaderOpen }) {
         document.cookie =
           "authToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
         localStorage.removeItem("userRole");
+        localStorage.removeItem("selectedConfigId");
 
         navigate(routes.login_admin);
       } else {
