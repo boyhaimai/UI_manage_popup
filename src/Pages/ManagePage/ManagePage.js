@@ -42,7 +42,7 @@ import {
 import { useTokenExpiration } from "~/contexts/TokenExpirationContext/TokenExpirationContext";
 
 const cx = classNames.bind(styles);
-const API_BASE_URL = "http://localhost:5000"; // Thay đổi URL cơ sở API nếu cần
+const API_BASE_URL = "https://n8n.vazo.vn/api"; // Thay đổi URL cơ sở API nếu cần
 
 function ManagePage() {
   const [stats, setStats] = useState({
